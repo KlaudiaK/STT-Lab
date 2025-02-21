@@ -21,4 +21,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "STT Lab"
 include(":app")
- 
+include(":sherpa-onnx")
+include(":core")
+include(":audioplayer")

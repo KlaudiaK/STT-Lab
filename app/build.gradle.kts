@@ -2,16 +2,17 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("dagger.hilt.android.plugin")
+    id("kotlin-kapt")
 }
 
 android {
     namespace = "com.android.klaudiak.sttlab"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.android.klaudiak.sttlab"
         minSdk = 28
-        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -40,7 +41,9 @@ android {
 }
 
 dependencies {
-
+    implementation(project(":sherpa-onnx"))
+    implementation(project(":core"))
+    implementation(project(":audioplayer"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -56,4 +59,10 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    // Hilt
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.android.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
+
 }
