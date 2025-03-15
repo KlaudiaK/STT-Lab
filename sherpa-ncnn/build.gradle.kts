@@ -1,5 +1,5 @@
 plugins {
-    alias(libs.plugins.android.application)
+    alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("dagger.hilt.android.plugin")
@@ -7,16 +7,20 @@ plugins {
 }
 
 android {
-    namespace = "com.android.klaudiak.sttlab"
+    namespace = "com.android.klaudiak.sherpa_ncnn"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.android.klaudiak.sttlab"
         minSdk = 28
-        versionCode = 1
-        versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles("consumer-rules.pro")
+
+        ndkVersion = "25.2.9519653"
+
+        ndk {
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86_64", "x86")
+        }
     }
 
     buildTypes {
@@ -38,26 +42,15 @@ android {
     buildFeatures {
         compose = true
     }
-    sourceSets.named("main") {
-        jniLibs.srcDirs("src/main/jniLibs")
-    }
+}
 
-    /*
-    packaging {
-         jniLibs.pickFirsts.add("lib/arm64-v8a/libkaldi-native-fbank-core.so")
-         jniLibs.pickFirsts.add("lib/arm64-v7a/libkaldi-native-fbank-core.so")
-         jniLibs.pickFirsts.add("lib/armeabi-v7a/libkaldi-native-fbank-core.so")
-         jniLibs.pickFirsts.add("lib/x86/libkaldi-native-fbank-core.so")
-         jniLibs.pickFirsts.add("lib/x86_64/libkaldi-native-fbank-core.so")
-     }*/
+kapt {
+    correctErrorTypes = true
 }
 
 dependencies {
-    // implementation(project(":sherpa-onnx"))
-    implementation(project(":sherpa-ncnn"))
     implementation(project(":core"))
     implementation(project(":audioplayer"))
-    implementation(project(":vosk-stt"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -66,17 +59,15 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.appcompat)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
 
     // Hilt
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
-    implementation(libs.androidx.hilt.navigation.compose)
 
+    kapt(libs.androidx.hilt.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
 }

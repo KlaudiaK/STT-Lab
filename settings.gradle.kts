@@ -1,3 +1,5 @@
+import org.gradle.internal.impldep.org.junit.experimental.categories.Categories.CategoryFilter.exclude
+
 pluginManagement {
     repositories {
         google {
@@ -21,8 +23,9 @@ dependencyResolutionManagement {
 
 rootProject.name = "STT Lab"
 include(":app")
-include(":sherpa-onnx")
 include(":core")
 include(":audioplayer")
 include(":vosk-stt")
 include(":vosk_models")
+include(":sherpa-ncnn")
+include(":sherpa-onnx")
