@@ -2,6 +2,7 @@ package com.android.klaudiak.audioplayer
 
 import android.Manifest
 import android.content.Context
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Environment
 import android.util.Log
@@ -130,6 +131,9 @@ fun createExoPlayer(
         val uri: Uri = file.toUri()
         Log.d("AudioPlayer", "Adding file to playlist: ${file.name}")
 
+        val duration = getAudioFileDuration(context, uri)
+        Log.d("AudioPlayer", "Duration of ${file.name}: $duration ms")
+
         val mediaItem = MediaItem
             .Builder()
             .setUri(uri)
@@ -164,6 +168,20 @@ fun createExoPlayer(
     })
 
     return exoPlayer
+}
+
+fun getAudioFileDuration(context: Context, uri: Uri): Long {
+    val retriever = MediaMetadataRetriever()
+    return try {
+        retriever.setDataSource(context, uri)
+        val duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+        duration?.toLongOrNull() ?: 0L
+    } catch (e: Exception) {
+        Log.e("AudioPlayer", "Error retrieving duration for URI: $uri", e)
+        0L
+    } finally {
+        retriever.release()
+    }
 }
 
 /*
