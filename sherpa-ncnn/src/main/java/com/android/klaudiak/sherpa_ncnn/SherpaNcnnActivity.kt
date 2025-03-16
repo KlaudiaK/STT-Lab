@@ -147,18 +147,17 @@ class SherpaNcnnActivity : ComponentActivity(), AudioPlaybackListener {
             model.reset(true)
 
             recordingThread = thread(start = true) {
-                //         Log.i(TAG, "Recording thread started: ${LocalDateTime.now()}")
                 processSamples(
                     { newText ->
                         viewModel.updateTranscriptionText(newText)
                     },
-                    {
-                        // if (newText.isNotEmpty())
-                        viewModel.startRecordingTime()
+                    { length ->
+                        viewModel.updateFileTranscriptionDuration(length)
                     },
                     {
-                        viewModel.endRecordingTime()
-                    })
+                        viewModel.updateAudioFileTranslation(it)
+                    }
+                )
             }
 
             Log.i(TAG, "Recording started")
@@ -184,8 +183,8 @@ class SherpaNcnnActivity : ComponentActivity(), AudioPlaybackListener {
 
     private fun processSamples(
         updateText: (String) -> Unit,
-        startRecordingTime: () -> Unit,
-        stopRecordingTime: () -> Unit
+        updateFileTranscriptionDuration: (Long) -> Unit,
+        updateAudioFileTranslation: (List<String>) -> Unit
     ) {
 
         var started = false
@@ -246,6 +245,7 @@ class SherpaNcnnActivity : ComponentActivity(), AudioPlaybackListener {
                 "Word: ${word}, Timestamp: $timestamp ms"
             )
         }
+        updateAudioFileTranslation(filteredWordTimestamps.keys.toList())
 
         with(filteredWordTimestamps.values) {
             val diff = last() - first()
@@ -253,6 +253,9 @@ class SherpaNcnnActivity : ComponentActivity(), AudioPlaybackListener {
                 "WordTimestamp",
                 "Duration: $diff ms"
             )
+
+            updateFileTranscriptionDuration(diff)
+
             //  firstNotNullOfOrNull { (_, timestamp) -> timestamp }
         }
 

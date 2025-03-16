@@ -174,15 +174,17 @@ class SherpaOnnxActivity : ComponentActivity(), AudioPlaybackListener {
 
         val bufferSize = (0.1 * 16000).toInt()
         val buffer = ShortArray(bufferSize)
-        val startTime = System.nanoTime()
+//        val startTime = System.nanoTime()
 
         while (audioPlayerViewModel.isRecording.value) {
             val ret = audioRecord?.read(buffer, 0, buffer.size)
             if (ret != null && ret > 0) {
                 val samples = FloatArray(ret) { buffer[it] / 32768.0f }
                 model.acceptWaveform(samples, sampleRate = 16000)
-                while (model.isReady()) {
-                    model.decode()
+                synchronized(model) {
+                    while (model.isReady()) {
+                        model.decode()
+                    }
                 }
 
                 val isEndpoint = model.isEndpoint()
@@ -196,15 +198,15 @@ class SherpaOnnxActivity : ComponentActivity(), AudioPlaybackListener {
             }
         }
 
-        val endTime = System.nanoTime()
-        val processingTime = (endTime - startTime) / 1_000_000_000.0
-        val audioDuration = bufferSize.toDouble() / 16000
-        val rtf = processingTime / audioDuration
+//        val endTime = System.nanoTime()
+//        val processingTime = (endTime - startTime) / 1_000_000_000.0
+//        val audioDuration = bufferSize.toDouble() / 16000
+//        val rtf = processingTime / audioDuration
 
-        Log.i(
-            TAG,
-            "Processing Time: $processingTime sec, Audio Duration: $audioDuration sec, RTF: $rtf"
-        )
+//        Log.i(
+//            TAG,
+//            "Processing Time: $processingTime sec, Audio Duration: $audioDuration sec, RTF: $rtf"
+//        )
     }
 
     private fun initMicrophone(): Boolean {
@@ -222,6 +224,19 @@ class SherpaOnnxActivity : ComponentActivity(), AudioPlaybackListener {
             AudioFormat.ENCODING_PCM_16BIT
         )
         Log.i(TAG, "Buffer size: ${bufferSize * 1000.0f / 16000} ms")
+
+//        val minBufferSize = AudioRecord.getMinBufferSize(
+//            16000,
+//            AudioFormat.CHANNEL_IN_MONO,
+//            AudioFormat.ENCODING_PCM_16BIT
+//        )
+//
+//        val bufferSize = if (minBufferSize != AudioRecord.ERROR_BAD_VALUE && minBufferSize != AudioRecord.ERROR) {
+//            minBufferSize * 2
+//        } else {
+//            Log.e(TAG, "Invalid buffer size!")
+//            return false
+//        }
 
         audioRecord = AudioRecord(
             MediaRecorder.AudioSource.MIC,

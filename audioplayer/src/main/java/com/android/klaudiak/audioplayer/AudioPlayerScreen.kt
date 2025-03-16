@@ -45,12 +45,20 @@ import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import java.io.File
 
 @Composable
-fun AudioPlayerScreen(viewModel: AudioPlayerViewModel = hiltViewModel()) {
+fun AudioPlayerScreen(
+    viewModel: AudioPlayerViewModel = hiltViewModel()
+) {
     val context = LocalContext.current
 
 
     var isPlaying by remember { mutableStateOf(false) }
-    val exoPlayer = remember { createExoPlayer(context, "stt", { viewModel.updateFileName(it) }) }
+    val exoPlayer = remember {
+        createExoPlayer(
+            context,
+            "stt",
+            { viewModel.updateFileName(it) },
+            { filename, duration -> viewModel.updateFileDuration(filename, duration) })
+    }
 
     val requestPermissionLauncher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) { granted ->
@@ -111,7 +119,8 @@ fun AudioPlayerScreen(viewModel: AudioPlayerViewModel = hiltViewModel()) {
 fun createExoPlayer(
     context: Context,
     folderName: String,
-    updateFileName: (String) -> Unit
+    updateFileName: (String) -> Unit,
+    updateFileDuration: (String, Long) -> Unit
 ): ExoPlayer {
     val exoPlayer = ExoPlayer.Builder(context).build()
 
@@ -132,6 +141,7 @@ fun createExoPlayer(
         Log.d("AudioPlayer", "Adding file to playlist: ${file.name}")
 
         val duration = getAudioFileDuration(context, uri)
+        updateFileDuration(file.name, duration)
         Log.d("AudioPlayer", "Duration of ${file.name}: $duration ms")
 
         val mediaItem = MediaItem
