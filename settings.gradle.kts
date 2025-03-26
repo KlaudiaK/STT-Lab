@@ -24,6 +24,7 @@ dependencyResolutionManagement {
 rootProject.name = "STT Lab"
 include(":app")
 include(":core")
+include(":domain")
 include(":audioplayer")
 include(":vosk-stt")
 include(":vosk_models")
