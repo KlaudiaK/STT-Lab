@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.android.library) apply false
     id("com.google.dagger.hilt.android") version "2.55" apply false
+    alias(libs.plugins.android.test) apply false
 }
 
 buildscript {

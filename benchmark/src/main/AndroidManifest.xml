@@ -1,0 +1,18 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application
+        android:debuggable="true"
+        android:requestLegacyExternalStorage="true"
+        tools:ignore="HardcodedDebugMode">
+
+        <activity android:name="androidx.activity.ComponentActivity" />
+
+        <profileable
+            android:shell="true"
+            tools:targetApi="q" />
+    </application>
+    <queries>
+        <package android:name="com.example.macrobenchmark.target" />
+    </queries>
+</manifest>
