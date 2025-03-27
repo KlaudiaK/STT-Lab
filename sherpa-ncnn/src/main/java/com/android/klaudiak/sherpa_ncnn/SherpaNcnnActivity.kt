@@ -6,7 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import com.android.klaudiak.audioplayer.AudioPlaybackListener
-import com.android.klaudiak.audioplayer.AudioPlayerViewModel
+import com.android.klaudiak.audioplayer.presentation.AudioPlayerViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

@@ -2,7 +2,6 @@ package com.android.klaudiak.vosk_stt
 
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.provider.Telephony.Mms.Part.FILENAME
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -28,8 +27,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import com.android.klaudiak.audioplayer.AudioPlayerScreen
-import com.android.klaudiak.audioplayer.AudioPlayerViewModel
+import com.android.klaudiak.audioplayer.presentation.AudioPlayerScreen
+import com.android.klaudiak.audioplayer.presentation.AudioPlayerViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import org.vosk.LibVosk
 import org.vosk.LogLevel

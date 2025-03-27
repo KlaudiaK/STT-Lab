@@ -34,8 +34,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import com.android.klaudiak.audioplayer.AudioPlaybackListener
-import com.android.klaudiak.audioplayer.AudioPlayerScreen
-import com.android.klaudiak.audioplayer.AudioPlayerViewModel
+import com.android.klaudiak.audioplayer.presentation.AudioPlayerScreen
+import com.android.klaudiak.audioplayer.presentation.AudioPlayerViewModel
 import com.k2fsa.sherpa.onnx.OnlineRecognizerConfig
 import com.k2fsa.sherpa.onnx.SherpaOnnx
 import com.k2fsa.sherpa.onnx.getEndpointConfig
