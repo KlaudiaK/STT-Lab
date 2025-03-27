@@ -53,16 +53,7 @@ import java.io.File
 fun AudioPlayerScreen(
     viewModel: AudioPlayerViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
-
     var isPlaying by remember { mutableStateOf(false) }
-    val exoPlayer = remember {
-        createExoPlayer(
-            context,
-            AUDIO_FILE_FOLDER_NAME,
-            { viewModel.updateFileName(it) },
-            { filename, duration -> viewModel.updateFileDuration(filename, duration) })
-    }
 
     val requestPermissionLauncher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) { granted ->
@@ -72,11 +63,12 @@ fun AudioPlayerScreen(
         }
 
     LaunchedEffect(Unit) {
+        viewModel.initializePlayer()
         requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     }
 
     LaunchedEffect(isPlaying) {
-        exoPlayer.playWhenReady = isPlaying
+        viewModel.setPlayWhenReady(isPlaying)
     }
 
     Column(
@@ -93,10 +85,8 @@ fun AudioPlayerScreen(
 
         Button(
             onClick = {
-                if (exoPlayer.mediaItemCount > 0) {
-                    exoPlayer.seekTo(0, 0) // Move to the first item in the playlist
-                    exoPlayer.playWhenReady = true
-                }
+               viewModel.moveSeekToStart()
+                isPlaying = !isPlaying
             },
             modifier = Modifier.padding(top = dimensionResource(R.dimen.padding_small))
         ) {
@@ -134,92 +124,3 @@ fun PlayAudioIconButton(isPlaying: Boolean, onClick: () -> Unit) {
         )
     }
 }
-
-@OptIn(UnstableApi::class)
-fun createExoPlayer(
-    context: Context,
-    folderName: String,
-    updateFileName: (String) -> Unit,
-    updateFileDuration: (String, Long) -> Unit
-): ExoPlayer {
-    val exoPlayer = ExoPlayer.Builder(context).build()
-
-    val folder = File(
-        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-        folderName
-    )
-    val audioFiles =
-        folder.listFiles { file -> file.extension in listOf("mp3", "wav", "flac", "ogg") }
-
-    if (audioFiles.isNullOrEmpty()) {
-        Log.e("AudioPlayer", "No audio files found in folder: ${folder.path}")
-        return exoPlayer
-    }
-
-    val mediaSources = audioFiles.map { file ->
-        val uri: Uri = file.toUri()
-        Log.d("AudioPlayer", "Adding file to playlist: ${file.name}")
-
-        val duration = getAudioFileDuration(context, uri)
-        updateFileDuration(file.name, duration)
-        Log.d("AudioPlayer", "Duration of ${file.name}: $duration ms")
-
-        val mediaItem = MediaItem
-            .Builder()
-            .setUri(uri)
-            .setMediaId(file.name)
-            .build()
-
-        val dataSourceFactory = DefaultDataSource.Factory(context)
-        ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(mediaItem)
-    }
-
-    exoPlayer.setMediaSources(mediaSources)
-    exoPlayer.prepare()
-
-    exoPlayer.addListener(object : Player.Listener {
-        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-            mediaItem?.let {
-                Log.i(
-                    TAG,
-                    "Transitioning to: ${it.mediaId}, time: ${System.currentTimeMillis()}"
-                )
-                updateFileName(it.mediaId)
-            }
-
-        }
-
-        override fun onPlaybackStateChanged(state: Int) {
-            if (state == Player.STATE_READY && exoPlayer.currentMediaItem != null) {
-                val firstItem = exoPlayer.currentMediaItem
-                firstItem?.let {
-                    Log.i(TAG, "First file ready: ${it.mediaId}")
-                    updateFileName(it.mediaId)
-                }
-            }
-        }
-    })
-
-    return exoPlayer
-}
-
-/*
-
-@OptIn(UnstableApi::class)
-fun createExoPlayer(context: Context): ExoPlayer {
-    val exoPlayer = ExoPlayer.Builder(context).build()
-
-    val folder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-    val filePath = folder.path + "/84-121550-0000.flac"
-
-    val uri: Uri = filePath.toUri()
-
-    val mediaItem = MediaItem.fromUri(uri)
-    val dataSourceFactory = DefaultDataSource.Factory(context)
-    val mediaSource = ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(mediaItem)
-
-    exoPlayer.setMediaSource(mediaSource)
-    exoPlayer.prepare()
-
-    return exoPlayer
-}*/
