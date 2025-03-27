@@ -1,9 +1,10 @@
-package com.android.klaudiak.audioplayer
+package com.android.klaudiak.audioplayer.presentation
 
 import android.app.Application
 import android.os.Environment
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
+import com.android.klaudiak.audioplayer.AudioPlaybackListener
 import com.android.klaudiak.audioplayer.model.AudioFileData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +16,6 @@ import java.io.IOException
 import java.time.Duration
 import java.time.LocalDateTime
 import javax.inject.Inject
-
 
 @HiltViewModel
 class AudioPlayerViewModel @Inject constructor(
@@ -36,7 +36,6 @@ class AudioPlayerViewModel @Inject constructor(
     private val _startRecording = MutableStateFlow<LocalDateTime?>(null)
     val startRecording = _startRecording.asStateFlow()
 
-
     private val _endRecording = MutableStateFlow<LocalDateTime?>(null)
     val endRecording = _startRecording.asStateFlow()
 
@@ -44,9 +43,9 @@ class AudioPlayerViewModel @Inject constructor(
     val files = _files.asStateFlow()
 
     fun updateFileName(newFileName: String) {
-        if (_currentFileName.value != newFileName) { // Prevent redundant updates
+        if (_currentFileName.value != newFileName) {
             _currentFileName.value = newFileName
-            playbackListener?.onNewAudioFileStarted(newFileName) // Notify listener
+            playbackListener?.onNewAudioFileStarted(newFileName)
         }
     }
 
@@ -136,5 +135,10 @@ class AudioPlayerViewModel @Inject constructor(
         } catch (e: IOException) {
             Log.e("Audio Player", "Error saving transcription: ${e.message}")
         }
+    }
+
+    companion object {
+        const val AUDIO_FILE_FOLDER_NAME = "stt"
+        const val TAG = "AudioPlayer"
     }
 }
