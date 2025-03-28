@@ -1,5 +1,5 @@
 // Copyright (c)  2023  Xiaomi Corporation
-package com.k2fsa.sherpa.onnx
+package com.android.klaudiak.sherpa_onnx
 
 import android.content.res.AssetManager
 

@@ -43,8 +43,8 @@ android {
 dependencies {
     implementation(project(":domain"))
     implementation(project(":audioplayer"))
-    implementation(project(":sherpa-ncnn"))
- //   implementation(project(":sherpa-onnx"))
+    implementation(project(":sherpa_ncnn"))
+    //   implementation(project(":sherpa-onnx"))
     implementation(libs.androidx.junit)
     implementation(libs.androidx.espresso.core)
     implementation(libs.androidx.uiautomator)

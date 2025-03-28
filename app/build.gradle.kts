@@ -59,8 +59,8 @@ android {
 }
 
 dependencies {
+    implementation(project(":sherpa_ncnn"))
     // implementation(project(":sherpa-onnx"))
-    implementation(project(":sherpa-ncnn"))
     implementation(project(":core"))
     implementation(project(":audioplayer"))
     implementation(project(":vosk-stt"))

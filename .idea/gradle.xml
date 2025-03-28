@@ -15,8 +15,8 @@
             <option value="$PROJECT_DIR$/benchmark" />
             <option value="$PROJECT_DIR$/core" />
             <option value="$PROJECT_DIR$/domain" />
-            <option value="$PROJECT_DIR$/sherpa-ncnn" />
             <option value="$PROJECT_DIR$/sherpa-onnx" />
+            <option value="$PROJECT_DIR$/sherpa_ncnn" />
             <option value="$PROJECT_DIR$/vosk-stt" />
             <option value="$PROJECT_DIR$/vosk_models" />
           </set>

@@ -33,7 +33,7 @@
         </activity>
 
         <activity
-            android:name="com.android.klaudiak.sherpa.onnx.SherpaOnnxActivity"
+            android:name="com.android.klaudiak.sherpa_onnx.onnx.SherpaOnnxActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

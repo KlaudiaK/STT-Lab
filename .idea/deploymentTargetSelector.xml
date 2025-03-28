@@ -8,9 +8,6 @@
       <SelectionState runConfigName="measureCpuAndMemoryUsage()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="SttBenchmarkTest">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="benchmarkSherpaNcnnTranscription()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>

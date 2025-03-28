@@ -1,4 +1,4 @@
-package com.android.klaudiak.sherpa.onnx
+package com.android.klaudiak.sherpa_onnx
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -36,12 +36,6 @@ import androidx.core.app.ActivityCompat
 import com.android.klaudiak.audioplayer.AudioPlaybackListener
 import com.android.klaudiak.audioplayer.presentation.AudioPlayerScreen
 import com.android.klaudiak.audioplayer.presentation.AudioPlayerViewModel
-import com.k2fsa.sherpa.onnx.OnlineRecognizerConfig
-import com.k2fsa.sherpa.onnx.SherpaOnnx
-import com.k2fsa.sherpa.onnx.getEndpointConfig
-import com.k2fsa.sherpa.onnx.getFeatureConfig
-import com.k2fsa.sherpa.onnx.getModelConfig
-import com.k2fsa.sherpa.onnx.getOnlineLMConfig
 import dagger.hilt.android.AndroidEntryPoint
 import kotlin.concurrent.thread
 
