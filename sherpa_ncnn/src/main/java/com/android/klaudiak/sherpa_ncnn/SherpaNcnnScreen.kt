@@ -77,7 +77,7 @@ fun SherpaNcnnScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        AudioPlayerScreen(viewModel)
+        AudioPlayerScreen(viewModel, { toggleRecording(viewModel)})
 
         SelectionContainer {
             Text(

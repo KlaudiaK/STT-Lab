@@ -51,7 +51,8 @@ import java.io.File
 
 @Composable
 fun AudioPlayerScreen(
-    viewModel: AudioPlayerViewModel = hiltViewModel()
+    viewModel: AudioPlayerViewModel = hiltViewModel(),
+    toggleRecording: () -> Unit,
 ) {
     var isPlaying by remember { mutableStateOf(false) }
 
@@ -81,6 +82,7 @@ fun AudioPlayerScreen(
 
         PlayAudioButton(isPlaying) {
             isPlaying = !isPlaying
+            toggleRecording()
         }
 
         Button(

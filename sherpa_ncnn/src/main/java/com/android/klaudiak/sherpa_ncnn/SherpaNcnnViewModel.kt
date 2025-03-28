@@ -117,10 +117,18 @@ class SherpaNcnnViewModel @Inject constructor(
         val buffer = ShortArray(bufferSize)
         val wordTimestamps = LinkedHashMap<String, Long>()
 
+        var totalProcessingTimeNs: Long = 0
+        var totalAudioDurationSec: Double = 0.0
+        val sampleRate = 16000.0
+        val chunkDurationSec = bufferSize / sampleRate
+
         while (true) {
             val ret = audioRecord?.read(buffer, 0, buffer.size) ?: 0
             if (ret > 0) {
                 val samples = FloatArray(ret) { buffer[it] / 32768.0f }
+
+                val startTimeNs = System.nanoTime()
+
                 model.acceptSamples(samples)
                 synchronized(model) {
                     while (model.isReady()) {
@@ -137,9 +145,14 @@ class SherpaNcnnViewModel @Inject constructor(
                     }
                 }
 
-                val text = model.text
-                updateText(text)
-                logTextIfNotLogged(text)
+                totalProcessingTimeNs += System.nanoTime() - startTimeNs
+                totalAudioDurationSec += chunkDurationSec
+
+                val rtf = (totalProcessingTimeNs / 1e9) / totalAudioDurationSec
+                Log.i(TAG, "RTF: $rtf")
+
+                updateText(model.text)
+                logTextIfNotLogged(model.text)
 
                 if (model.isEndpoint()) {
                     model.reset()
