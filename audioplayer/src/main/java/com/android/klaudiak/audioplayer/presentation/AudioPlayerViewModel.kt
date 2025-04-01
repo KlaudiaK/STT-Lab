@@ -112,14 +112,12 @@ class AudioPlayerViewModel @Inject constructor(
         Log.i("AudioFileData", _files.value.joinToString { it.toString() })
     }
 
-    fun updateAudioFileTranslation(translations: List<String>) {
+    fun updateAudioFileTranslation(translations: String) {
         _files.update { files ->
             val updatedFiles = files.toMutableList()
             val index = updatedFiles.indexOfFirst { it.filename == currentFileName.value }
             if (index != -1) {
-                val finalTranslation =
-                    translations.map { it.substringBefore("_") }.joinToString(" ")
-                updatedFiles[index] = updatedFiles[index].copy(transcription = finalTranslation)
+                updatedFiles[index] = updatedFiles[index].copy(transcription = translations)
             }
             updatedFiles
         }
@@ -179,6 +177,22 @@ class AudioPlayerViewModel @Inject constructor(
             }
         }
 
+    }
+
+    fun exportTranscriptionsToTxt(audioFiles: List<AudioFileData>, outputFilePath: String) {
+        try {
+            val path =
+                "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)}/transcriptions"
+
+            File("$path/$outputFilePath.txt").bufferedWriter().use { writer ->
+                audioFiles.forEach { file ->
+                    writer.write("${file.filename}|${file.transcription ?: ""}\n")
+                }
+            }
+            Log.d(TAG, "Successfully exported transcriptions to $outputFilePath")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error exporting transcriptions: ${e.message}")
+        }
     }
 
     override fun onCleared() {
