@@ -34,7 +34,6 @@ class SherpaNcnnActivity : ComponentActivity(), AudioPlaybackListener {
     override fun onNewAudioFileStarted(fileName: String) {
         Log.i(TAG, "New audio file started: $fileName")
         audioPlayerViewModel.updateFileName(fileName)
-        sherpaNcnnViewModel.resetModel(true)
     }
 
     companion object {
