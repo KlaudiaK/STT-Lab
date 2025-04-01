@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="save_transcription">Save transcriptions to file</string>
+    <string name="audio_player_header">Audio Player</string>
+    <string name="export_section_title">Export</string>
+    <string name="play_from_beginning">Play from Beginning</string>
+</resources>
