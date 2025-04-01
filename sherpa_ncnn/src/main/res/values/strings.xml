@@ -9,6 +9,7 @@
         \n\n\n
         We use https://github.com/tencent/ncnn for neural network computation.
     </string>
-    <string name="start">Start</string>
-    <string name="stop">Stop</string>
+    <string name="start">Run transcription model</string>
+    <string name="stop">Stop transcription model</string>
+    <string name="audio_transcription_title">Audio transcription</string>
 </resources>
