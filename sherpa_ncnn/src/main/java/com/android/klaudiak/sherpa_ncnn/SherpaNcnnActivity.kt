@@ -21,7 +21,22 @@ class SherpaNcnnActivity : ComponentActivity(), AudioPlaybackListener {
             SherpaNcnnScreen(
                 audioPlayerViewModel,
                 { sherpaNcnnViewModel.initModel(application = application) },
-                { sherpaNcnnViewModel.toggleRecording(audioPlayerViewModel) },
+                {
+                    sherpaNcnnViewModel.toggleRecording(
+                        isRecording = audioPlayerViewModel.isRecording.value,
+                        onRecordingStarted = { audioPlayerViewModel.startRecording() },
+                        updateTranscriptionText = {
+                            audioPlayerViewModel.updateTranscriptionText(it)
+                        },
+                        updateFileTranscriptionDuration = {
+                            audioPlayerViewModel.updateFileTranscriptionDuration(it)
+                        },
+                        updateAudioFileTranslation = {
+                            audioPlayerViewModel.updateAudioFileTranslation(it)
+                        },
+                        onRecordingStopped = { audioPlayerViewModel.stopRecording() }
+                    )
+                },
                 ::finish,
                 { sherpaNcnnViewModel.updateModel(it) }
             )

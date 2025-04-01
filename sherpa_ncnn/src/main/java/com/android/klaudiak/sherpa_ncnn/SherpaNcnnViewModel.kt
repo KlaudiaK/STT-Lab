@@ -59,15 +59,32 @@ class SherpaNcnnViewModel @Inject constructor(
         )
     }
 
-    fun toggleRecording(viewModel: AudioPlayerViewModel) {
-        if (!viewModel.isRecording.value) {
-            startRecording(viewModel)
+    fun toggleRecording(
+        isRecording: Boolean,
+        onRecordingStarted: () -> Unit,
+        updateTranscriptionText: (String) -> Unit,
+        updateFileTranscriptionDuration: (Long) -> Unit,
+        updateAudioFileTranslation: (String) -> Unit,
+        onRecordingStopped: () -> Unit
+    ) {
+        if (!isRecording) {
+            startRecording(
+                onRecordingStarted = onRecordingStarted,
+                updateTranscriptionText = updateTranscriptionText,
+                updateFileTranscriptionDuration = updateFileTranscriptionDuration,
+                updateAudioFileTranslation = updateAudioFileTranslation
+            )
         } else {
-            stopRecording(viewModel)
+            stopRecording { onRecordingStopped() }
         }
     }
 
-    private fun startRecording(viewModel: AudioPlayerViewModel) {
+    private fun startRecording(
+        onRecordingStarted: () -> Unit,
+        updateTranscriptionText: (String) -> Unit,
+        updateFileTranscriptionDuration: (Long) -> Unit,
+        updateAudioFileTranslation: (String) -> Unit
+    ) {
         if (!initMicrophone()) {
             Log.e(TAG, "Failed to initialize microphone")
             return
@@ -75,14 +92,14 @@ class SherpaNcnnViewModel @Inject constructor(
 
         try {
             audioRecord?.startRecording()
-            viewModel.startRecording()
+            onRecordingStarted()
             model.reset(true)
 
             recordingThread = thread(start = true) {
                 processSamples(
-                    { newText -> viewModel.updateTranscriptionText(newText) },
-                    { length -> viewModel.updateFileTranscriptionDuration(length) },
-                    { viewModel.updateAudioFileTranslation(it) }
+                    { updateTranscriptionText(it) },
+                    { updateFileTranscriptionDuration(it) },
+                    { updateAudioFileTranslation(it) }
                 )
             }
             Log.i(TAG, "Recording started")
@@ -91,9 +108,9 @@ class SherpaNcnnViewModel @Inject constructor(
         }
     }
 
-    private fun stopRecording(viewModel: AudioPlayerViewModel) {
+    private fun stopRecording(onRecordingStopped: () -> Unit) {
         try {
-            viewModel.stopRecording()
+            onRecordingStopped()
             audioRecord?.apply {
                 stop()
                 release()
@@ -109,11 +126,15 @@ class SherpaNcnnViewModel @Inject constructor(
     private fun processSamples(
         updateText: (String) -> Unit,
         updateFileTranscriptionDuration: (Long) -> Unit,
-        updateAudioFileTranslation: (List<String>) -> Unit
+        updateAudioFileTranslation: (String) -> Unit
     ) {
 
         Log.i(TAG, "Started processing samples")
-        val bufferSize = (0.1 * 16000).toInt()
+        val sampleRateInHz = 16000
+        val bufferSize = AudioRecord.getMinBufferSize(
+            sampleRateInHz, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT
+        )
+
         val buffer = ShortArray(bufferSize)
         val wordTimestamps = LinkedHashMap<String, Long>()
 
@@ -152,7 +173,7 @@ class SherpaNcnnViewModel @Inject constructor(
                 Log.i(TAG, "RTF: $rtf")
 
                 updateText(model.text)
-                logTextIfNotLogged(model.text)
+                logTextIfNotLogged(model.text, updateAudioFileTranslation)
 
                 if (model.isEndpoint()) {
                     model.reset()
@@ -161,9 +182,10 @@ class SherpaNcnnViewModel @Inject constructor(
         }
     }
 
-    private fun logTextIfNotLogged(text: String) {
+    private fun logTextIfNotLogged(text: String, updateAudioFileTranslation: (String) -> Unit) {
         if (loggedTexts.add(text)) {
             Log.i("WordTimestamp", "Text: $text, Timestamp: ${System.currentTimeMillis()} ms")
+            updateAudioFileTranslation(text)
         }
     }
 
