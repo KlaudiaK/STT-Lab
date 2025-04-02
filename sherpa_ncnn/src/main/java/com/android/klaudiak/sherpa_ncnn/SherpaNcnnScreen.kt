@@ -96,7 +96,7 @@ fun SherpaNcnnScreen(
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        AudioPlayerScreen(viewModel, { toggleRecording(viewModel) })
+        AudioPlayerScreen(viewModel)
 
         SectionDividerWithText(text = stringResource(R.string.audio_transcription_title))
 

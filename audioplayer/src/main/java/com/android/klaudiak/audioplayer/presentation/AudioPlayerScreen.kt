@@ -60,7 +60,6 @@ import com.android.klaudiak.audioplayer.model.AudioFileData
 @Composable
 fun AudioPlayerScreen(
     viewModel: AudioPlayerViewModel = hiltViewModel(),
-    toggleRecording: () -> Unit,
 ) {
     var isPlaying by remember { mutableStateOf(false) }
 

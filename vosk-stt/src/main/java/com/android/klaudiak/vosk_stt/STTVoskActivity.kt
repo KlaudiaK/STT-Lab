@@ -89,7 +89,7 @@ fun SpeechToTextScreen(
             modifier = Modifier.padding(16.dp)
         )
 
-        AudioPlayerScreen(viewModel) {}
+        AudioPlayerScreen(viewModel)
 
         SelectionContainer(
             modifier = Modifier
