@@ -5,8 +5,11 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.runtime.CompositionLocalProvider
 import com.android.klaudiak.audioplayer.AudioPlaybackListener
 import com.android.klaudiak.audioplayer.presentation.AudioPlayerViewModel
+import com.android.klaudiak.sherpa_ncnn.Providers.LocalAudioPlayerViewModelProvider
+import com.android.klaudiak.sherpa_ncnn.Providers.LocalSherpaNcnnViewModelProvider
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -18,28 +21,12 @@ class SherpaNcnnActivity : ComponentActivity(), AudioPlaybackListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            SherpaNcnnScreen(
-                audioPlayerViewModel,
-                { sherpaNcnnViewModel.initModel(application = application) },
-                {
-                    sherpaNcnnViewModel.toggleRecording(
-                        isRecording = audioPlayerViewModel.isRecording.value,
-                        onRecordingStarted = { audioPlayerViewModel.startRecording() },
-                        updateTranscriptionText = {
-                            audioPlayerViewModel.updateTranscriptionText(it)
-                        },
-                        updateFileTranscriptionDuration = {
-                            audioPlayerViewModel.updateFileTranscriptionDuration(it)
-                        },
-                        updateAudioFileTranslation = {
-                            audioPlayerViewModel.updateAudioFileTranslation(it)
-                        },
-                        onRecordingStopped = { audioPlayerViewModel.stopRecording() }
-                    )
-                },
-                ::finish,
-                { sherpaNcnnViewModel.updateModel(it) }
-            )
+            CompositionLocalProvider(
+                LocalSherpaNcnnViewModelProvider provides sherpaNcnnViewModel,
+                LocalAudioPlayerViewModelProvider provides audioPlayerViewModel
+            ) {
+                SherpaNcnnScreen { finish() }
+            }
         }
 
         audioPlayerViewModel.setPlaybackListener(this)

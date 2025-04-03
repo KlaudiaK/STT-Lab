@@ -1,12 +1,11 @@
 package com.android.klaudiak.sherpa_ncnn
 
-import android.app.Application
+import android.content.Context
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.android.klaudiak.audioplayer.presentation.AudioPlayerViewModel
 import com.android.klaudiak.domain.permissions.PermissionRepository
 import com.k2fsa.sherpa.ncnn.RecognizerConfig
 import com.k2fsa.sherpa.ncnn.SherpaNcnn
@@ -14,30 +13,32 @@ import com.k2fsa.sherpa.ncnn.getDecoderConfig
 import com.k2fsa.sherpa.ncnn.getFeatureExtractorConfig
 import com.k2fsa.sherpa.ncnn.getModelConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.util.LinkedHashMap
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 import kotlin.concurrent.thread
 
 @HiltViewModel
 class SherpaNcnnViewModel @Inject constructor(
-    private val permissionRepository: PermissionRepository
+    private val permissionRepository: PermissionRepository,
+    @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
     private lateinit var model: SherpaNcnn
     private var audioRecord: AudioRecord? = null
     private var recordingThread: Thread? = null
 
-    val loggedTexts = mutableSetOf<String>()
+    private val _isRecording = MutableStateFlow(false)
+    val isRecording = _isRecording.asStateFlow()
+
+    private val loggedTexts = mutableSetOf<String>()
 
     fun updateModel(model: SherpaNcnn) {
         this.model = model
     }
 
-    fun resetModel(recreate: Boolean = false) {
-        model.reset(recreate)
-    }
-
-    fun initModel(useGPU: Boolean = true, application: Application): SherpaNcnn {
+    fun initModel(useGPU: Boolean = true): SherpaNcnn {
         Log.i(TAG, "Initializing model")
         val featConfig = getFeatureExtractorConfig(16000.0f, 80)
         val modelConfig = getModelConfig(type = 7, useGPU = useGPU)!!
@@ -53,34 +54,26 @@ class SherpaNcnnViewModel @Inject constructor(
             rule3MinUtteranceLength = 20.0f,
         )
 
-        return SherpaNcnn(
-            assetManager = application.assets,
-            config = config
-        )
+        return SherpaNcnn(assetManager = context.assets, config = config)
     }
 
     fun toggleRecording(
-        isRecording: Boolean,
-        onRecordingStarted: () -> Unit,
         updateTranscriptionText: (String) -> Unit,
         updateFileTranscriptionDuration: (Long) -> Unit,
-        updateAudioFileTranslation: (String) -> Unit,
-        onRecordingStopped: () -> Unit
+        updateAudioFileTranslation: (String) -> Unit
     ) {
-        if (!isRecording) {
+        if (!isRecording.value) {
             startRecording(
-                onRecordingStarted = onRecordingStarted,
                 updateTranscriptionText = updateTranscriptionText,
                 updateFileTranscriptionDuration = updateFileTranscriptionDuration,
                 updateAudioFileTranslation = updateAudioFileTranslation
             )
         } else {
-            stopRecording { onRecordingStopped() }
+            stopRecording()
         }
     }
 
     private fun startRecording(
-        onRecordingStarted: () -> Unit,
         updateTranscriptionText: (String) -> Unit,
         updateFileTranscriptionDuration: (Long) -> Unit,
         updateAudioFileTranslation: (String) -> Unit
@@ -92,7 +85,7 @@ class SherpaNcnnViewModel @Inject constructor(
 
         try {
             audioRecord?.startRecording()
-            onRecordingStarted()
+            _isRecording.value = true
             model.reset(true)
 
             recordingThread = thread(start = true) {
@@ -108,9 +101,9 @@ class SherpaNcnnViewModel @Inject constructor(
         }
     }
 
-    private fun stopRecording(onRecordingStopped: () -> Unit) {
+    private fun stopRecording() {
         try {
-            onRecordingStopped()
+            _isRecording.value = false
             audioRecord?.apply {
                 stop()
                 release()

@@ -44,23 +44,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import com.android.klaudiak.audioplayer.presentation.AudioPlayerScreen
-import com.android.klaudiak.audioplayer.presentation.AudioPlayerViewModel
 import com.android.klaudiak.audioplayer.presentation.SaveTranscriptionContent
 import com.android.klaudiak.audioplayer.presentation.SectionDividerWithText
+import com.android.klaudiak.sherpa_ncnn.Providers.LocalAudioPlayerViewModelProvider
+import com.android.klaudiak.sherpa_ncnn.Providers.LocalSherpaNcnnViewModelProvider
 import com.android.klaudiak.sherpa_ncnn.SherpaNcnnActivity.Companion.TAG
-import com.k2fsa.sherpa.ncnn.SherpaNcnn
 
 @Composable
 fun SherpaNcnnScreen(
-    viewModel: AudioPlayerViewModel,
-    initModel: () -> SherpaNcnn,
-    toggleRecording: (AudioPlayerViewModel) -> Unit,
-    finish: () -> Unit,
-    onModelChanged: (SherpaNcnn) -> Unit
+    finish: () -> Unit
 ) {
     val context = LocalContext.current
-    val isRecording by viewModel.isRecording.collectAsState()
-    val transcriptionText by viewModel.transcriptionText.collectAsState()
+    val audioPlayerViewModel = LocalAudioPlayerViewModelProvider.current
+    val sherpaNcnnViewModel = LocalSherpaNcnnViewModelProvider.current
+
+    val isRecording by sherpaNcnnViewModel.isRecording.collectAsState()
+    val transcriptionText by audioPlayerViewModel.transcriptionText.collectAsState()
 
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -85,7 +84,9 @@ fun SherpaNcnnScreen(
 
     LaunchedEffect(Unit) {
         Log.i(TAG, "Initializing model")
-        onModelChanged(initModel())
+        with(sherpaNcnnViewModel) {
+            updateModel(initModel())
+        }
         Log.i(TAG, "Model initialized")
     }
 
@@ -96,20 +97,34 @@ fun SherpaNcnnScreen(
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        AudioPlayerScreen(viewModel)
+        AudioPlayerScreen()
 
         SectionDividerWithText(text = stringResource(R.string.audio_transcription_title))
 
         TranscriptionWithModelContent(
             transcriptionText = transcriptionText,
             isRecording = isRecording,
-            toggleRecording = { toggleRecording(viewModel) },
+            toggleRecording = {
+                with(audioPlayerViewModel) {
+                    sherpaNcnnViewModel.toggleRecording(
+                        updateTranscriptionText = {
+                            updateTranscriptionText(it)
+                        },
+                        updateFileTranscriptionDuration = {
+                            updateFileTranscriptionDuration(it)
+                        },
+                        updateAudioFileTranslation = {
+                            updateAudioFileTranslation(it)
+                        }
+                    )
+                }
+            },
             modifier = Modifier
                 .weight(1f)
                 .padding(horizontal = dimensionResource(R.dimen.padding_medium))
         )
 
-        SaveTranscriptionContent(viewModel)
+        SaveTranscriptionContent()
     }
 }
 
