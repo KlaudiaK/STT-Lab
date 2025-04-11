@@ -47,11 +47,17 @@ class AudioPlayerViewModel @Inject constructor(
     private val _files = MutableStateFlow<List<AudioFileData>>(emptyList())
     val files = _files.asStateFlow()
 
+    private val _isPlaybackComplete = MutableStateFlow(false)
+    val isPlaybackComplete = _isPlaybackComplete.asStateFlow()
+
     private var exoPlayer: ExoPlayer? = null
 
     fun updateFileName(newFileName: String) {
-        if (_currentFileName.value != newFileName) {
+        if (newFileName == "PLAYBACK_COMPLETE") {
+            _isPlaybackComplete.value = true
+        } else if (_currentFileName.value != newFileName) {
             _currentFileName.value = newFileName
+            _isPlaybackComplete.value = false
             playbackListener?.onNewAudioFileStarted(newFileName)
         }
     }

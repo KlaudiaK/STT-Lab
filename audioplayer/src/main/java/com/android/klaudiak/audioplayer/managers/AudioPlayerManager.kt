@@ -104,6 +104,12 @@ class AudioPlayerManager @Inject constructor(
                         Log.i(TAG, "First file ready: $mediaId")
                         onFileNameUpdate(mediaId)
                     }
+                } else if (state == Player.STATE_ENDED) {
+                    Log.i(TAG, "Playback ended")
+                    if (exoPlayer.currentMediaItemIndex == exoPlayer.mediaItemCount - 1) {
+                        Log.i(TAG, "Last file finished playing")
+                        onFileNameUpdate("PLAYBACK_COMPLETE")
+                    }
                 }
             }
         })

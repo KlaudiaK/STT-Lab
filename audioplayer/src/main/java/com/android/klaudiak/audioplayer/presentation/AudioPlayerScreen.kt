@@ -63,6 +63,10 @@ fun AudioPlayerScreen(
 ) {
     var isPlaying by remember { mutableStateOf(false) }
 
+    val currentFileName by viewModel.currentFileName.collectAsState()
+    val audioFiles by viewModel.files.collectAsState()
+    val isPlaybackComplete by viewModel.isPlaybackComplete.collectAsState()
+
     val requestPermissionLauncher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) { granted ->
             if (!granted) {
@@ -98,6 +102,17 @@ fun AudioPlayerScreen(
         PlayFromBeginningButton {
             viewModel.moveSeekToStart()
             isPlaying = !isPlaying
+        }
+
+        if (isPlaybackComplete) {
+            Text(
+                text = stringResource(R.string.all_audio_files_completed),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = dimensionResource(R.dimen.padding_medium))
+            )
+
+            SaveTranscriptionContent(viewModel)
         }
     }
 }
