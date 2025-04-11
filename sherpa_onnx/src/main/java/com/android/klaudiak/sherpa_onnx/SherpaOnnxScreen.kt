@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import com.android.klaudiak.audioplayer.presentation.AudioPlayerScreen
@@ -87,7 +88,7 @@ fun SherpaOnnxScreen(
                 modifier = Modifier
                     .weight(2.5f)
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(dimensionResource(R.dimen.padding_medium))
                     .verticalScroll(rememberScrollState())
             )
         }
@@ -107,7 +108,10 @@ fun SherpaOnnxScreen(
                 }
             )
         }) {
-            Text(if (isRecording) "Stop" else "Start")
+            Text(
+                text = if (isRecording) stringResource(R.string.stop)
+                else stringResource(R.string.start)
+            )
         }
     }
 }

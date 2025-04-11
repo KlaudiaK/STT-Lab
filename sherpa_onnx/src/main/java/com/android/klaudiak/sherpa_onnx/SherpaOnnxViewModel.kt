@@ -162,7 +162,6 @@ class SherpaOnnxViewModel @Inject constructor(
                 totalAudioDurationSec += chunkDurationSec
 
                 val rtf = (totalProcessingTimeNs / 1e9) / totalAudioDurationSec
-                Log.i(TAG, "RTF: $rtf")
 
                 updateText(model.text)
                 logTextIfNotLogged(model.text, updateAudioFileTranslation)

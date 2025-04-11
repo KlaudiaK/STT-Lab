@@ -6,6 +6,6 @@
         The source code and pre-trained models are publicly available.
         Please see https://github.com/k2-fsa/sherpa-onnx for details.
     </string>
-    <string name="start">Start</string>
-    <string name="stop">Stop</string>
+    <string name="start">Run transcription model</string>
+    <string name="stop">Stop transcription model</string>
 </resources>
