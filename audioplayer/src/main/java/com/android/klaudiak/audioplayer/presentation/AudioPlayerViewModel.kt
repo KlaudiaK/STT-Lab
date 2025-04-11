@@ -157,6 +157,10 @@ class AudioPlayerViewModel @Inject constructor(
         }
     }
 
+    fun copyFilesFromExternalToInternalStorage() {
+        audioPlayerManager.copyFilesToInternalStorage()
+    }
+
     fun play() {
         exoPlayer?.play()
     }

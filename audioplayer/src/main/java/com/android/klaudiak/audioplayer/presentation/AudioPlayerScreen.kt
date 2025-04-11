@@ -67,12 +67,14 @@ fun AudioPlayerScreen(
         rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) { granted ->
             if (!granted) {
                 Log.i("AudioPlayer", "Permission denied.")
+            } else {
+                viewModel.copyFilesFromExternalToInternalStorage()
             }
         }
 
     LaunchedEffect(Unit) {
-        viewModel.initializePlayer()
         requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        viewModel.initializePlayer()
     }
 
     LaunchedEffect(isPlaying) {

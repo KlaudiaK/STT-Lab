@@ -15,10 +15,14 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import com.android.klaudiak.audioplayer.presentation.AudioPlayerViewModel.Companion.TAG
 import java.io.File
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class AudioPlayerManager(
+@Singleton
+class AudioPlayerManager @Inject constructor(
     private val folderName: String,
-    private val audioFileExtensions: List<String> = listOf("mp3", "wav", "flac", "ogg")
+    private val audioFileExtensions: List<String> = listOf("mp3", "wav", "flac", "ogg"),
+    private val context: Context
 ) {
 
     fun createExoPlayer(
@@ -36,9 +40,9 @@ class AudioPlayerManager(
         onFileNameUpdate: (String) -> Unit,
         onDurationUpdate: (String, Long) -> Unit
     ) {
-        val audioFiles = getAudioFiles()
+        val audioFiles = getAudioFiles(context)
         if (audioFiles.isEmpty()) {
-            Log.e(TAG, "No audio files found in folder: ${getFolderPath()}")
+            Log.e(TAG, "No audio files found in folder: ${getFolderPath(context)}")
             return
         }
 
@@ -116,4 +120,28 @@ class AudioPlayerManager(
                 0L
             }
         }
+
+    fun copyFilesToInternalStorage() {
+        val externalFolder = File(
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+            folderName
+        )
+
+        val internalFolder = File(context.filesDir, folderName)
+        if (!internalFolder.exists()) internalFolder.mkdirs()
+
+        if (internalFolder.listFiles()?.isEmpty() == true) {
+            if (externalFolder.exists() && externalFolder.isDirectory) {
+                externalFolder.listFiles()?.forEach { file ->
+                    if (file.isFile) {
+                        val destFile = File(internalFolder, file.name)
+                        file.copyTo(destFile, overwrite = true)
+                        Log.d(TAG, "Copied: ${file.name}")
+                    }
+                }
+            } else {
+                Log.e(TAG, "External folder doesn't exist or is not a directory")
+            }
+        }
+    }
 }

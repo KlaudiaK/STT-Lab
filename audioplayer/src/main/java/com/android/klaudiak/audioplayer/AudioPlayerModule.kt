@@ -19,8 +19,9 @@ object AudioPlayerModule {
         @ApplicationContext context: Context
     ): AudioPlayerManager {
         return AudioPlayerManager(
-            folderName = "stt",
-            audioFileExtensions = listOf("mp3", "wav", "flac", "ogg")
+            folderName = "stt_audiofiles",
+            audioFileExtensions = listOf("mp3", "wav", "flac", "ogg"),
+            context = context
         )
     }
 }
