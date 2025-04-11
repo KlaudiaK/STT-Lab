@@ -104,6 +104,11 @@ fun AudioPlayerScreen(
             isPlaying = !isPlaying
         }
 
+        AnimatedAudioFileStrip(
+            files = audioFiles,
+            currentFileName = currentFileName,
+        )
+
         if (isPlaybackComplete) {
             Text(
                 text = stringResource(R.string.all_audio_files_completed),
