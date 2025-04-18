@@ -12,6 +12,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.NonCancellable.start
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 import org.vosk.Model
 import org.vosk.Recognizer
 import org.vosk.android.RecognitionListener
@@ -53,55 +54,6 @@ class STTViewModel @Inject constructor(
         )
     }
 
-    fun recognizeFile(context: Context, filename: String) {
-        speechStreamService?.let {
-            it.stop()
-            speechStreamService = null
-            _resultText.value = "Stopped file recognition."
-            return
-        }
-
-        val localModel = model ?: run {
-            _resultText.value = "Model is not initialized."
-            return
-        }
-
-        try {
-            context.assets.open(filename).use { ais ->
-                if (ais.skip(44) != 44L) {
-                    throw IOException("Invalid WAV file: insufficient header data.")
-                }
-
-                val recognizer = Recognizer(localModel, 16000f)
-                speechStreamService = SpeechStreamService(recognizer, ais, 16000f).apply {
-                    start(object : RecognitionListener {
-                        override fun onResult(hypothesis: String) {
-                            _resultText.update { it + "$hypothesis\n" }
-                        }
-
-                        override fun onFinalResult(hypothesis: String) {
-                            _resultText.update { it + "$hypothesis\n" }
-                            speechStreamService = null
-                        }
-
-                        override fun onPartialResult(hypothesis: String) {}
-
-                        override fun onError(e: Exception) {
-                            _resultText.value = "Error: ${e.localizedMessage ?: "Unknown error"}"
-                        }
-
-                        override fun onTimeout() {}
-                    })
-                }
-            }
-        } catch (e: IOException) {
-            _resultText.value = "I/O Error: ${e.localizedMessage}"
-        } catch (e: Exception) {
-            _resultText.value = "Unexpected Error: ${e.localizedMessage}"
-        }
-    }
-
-
     fun toggleMicrophone() {
         if (speechService != null) {
             stopListening()
@@ -123,16 +75,14 @@ class STTViewModel @Inject constructor(
         try {
             speechService = SpeechService(recognizer, 16000f).apply {
                 startListening(object : RecognitionListener {
-                    override fun onResult(hypothesis: String) {
-                        updateResult(hypothesis)
-                    }
+                    override fun onResult(hypothesis: String) {}
 
                     override fun onFinalResult(hypothesis: String) {
-                        updateResult(hypothesis)
+                        speechStreamService = null
                     }
 
                     override fun onPartialResult(hypothesis: String) {
-                        if (hypothesis.isNotEmpty()) updateResult(hypothesis)
+                        updatePartialResult(hypothesis)
                     }
 
                     override fun onError(e: Exception) {
@@ -160,12 +110,30 @@ class STTViewModel @Inject constructor(
         }
     }
 
-    private fun updateResult(text: String) {
-        _resultText.value += "$text\n"
+    private fun updatePartialResult(hypothesis: String) {
+        parseResultPartialContent(hypothesis).takeIf { it.isNotEmpty() }?.let {
+            _resultText.value = it
+        }
+    }
+
+    private fun updateFinalResult(hypothesis: String) {
+        parseResultFinalContent(hypothesis).takeIf { it.isNotEmpty() }?.let {
+            _resultText.value = it
+        }
     }
 
     private fun handleError(message: String) {
         _resultText.value = message
     }
+
+    private fun parseResultPartialContent(hypothesis: String): String =
+        hypothesis.parseJsonContent("partial")
+
+    private fun parseResultFinalContent(hypothesis: String): String =
+        hypothesis.parseJsonContent("text")
+
+    private fun String.parseJsonContent(key: String): String = runCatching {
+        JSONObject(this).getString(key)
+    }.getOrElse { this }
 
 }
