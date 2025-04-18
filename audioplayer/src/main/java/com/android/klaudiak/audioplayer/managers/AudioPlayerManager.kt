@@ -54,12 +54,20 @@ class AudioPlayerManager @Inject constructor(
         }
     }
 
-    private fun getFolderPath(): String = File(
+    private fun getExternalDownloadFolderPath(): String = File(
         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
         folderName
     ).path
 
-    private fun getAudioFiles(): List<File> = File(getFolderPath())
+    private fun getFolderPath(context: Context): String {
+        val folder = File(context.filesDir, folderName)
+        if (!folder.exists()) {
+            folder.mkdirs()
+        }
+        return folder.path
+    }
+
+    private fun getAudioFiles(context: Context): List<File> = File(getFolderPath(context))
         .listFiles { file -> file.extension in audioFileExtensions }
         ?.toList()
         ?: emptyList()
