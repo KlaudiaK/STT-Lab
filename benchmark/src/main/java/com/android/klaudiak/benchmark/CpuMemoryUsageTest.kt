@@ -17,7 +17,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.GrantPermissionRule
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.Until
-import com.android.klaudiak.benchmark.utils.acceptPermission
+import com.android.klaudiak.benchmark.utils.acceptPermissionInEnglish
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -44,14 +44,6 @@ class CpuMemoryUsageBenchmark {
     @Test
     fun measureSherpaNcnnActivity() {
 
-//        val instrumentation = InstrumentationRegistry.getInstrumentation()
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//            val uiAutomation = instrumentation.uiAutomation
-//            uiAutomation.executeShellCommand(
-//                "pm grant com.android.klaudiak.sttlab android.permission.RECORD_AUDIO"
-//            ).close()
-//        }
-
         val powerMetricSupported = try {
             PowerMetric::class.java.methods.any {
                 it.name == "deviceSupportsPowerEnergy"
@@ -63,12 +55,15 @@ class CpuMemoryUsageBenchmark {
         val metrics = mutableListOf(
             StartupTimingMetric(),
             FrameTimingMetric(),
-            MemoryUsageMetric(MemoryUsageMetric.Mode.Max),
-           /* if (PowerMetric.deviceSupportsHighPrecisionTracking()) {
-                PowerMetric(PowerMetric.Type.Energy())
-            } else {
-                PowerMetric(PowerMetric.Type.Battery())
-            }*/
+            MemoryUsageMetric(
+                MemoryUsageMetric.Mode.Max,
+                listOf(
+                    MemoryUsageMetric.SubMetric.Gpu,
+                    MemoryUsageMetric.SubMetric.HeapSize,  // Java/Kotlin heap
+                    MemoryUsageMetric.SubMetric.RssAnon,   // RAM used by process
+                    MemoryUsageMetric.SubMetric.RssFile,   // Mapped files
+                )
+            ),
         )
 
         if (powerMetricSupported) {
@@ -79,28 +74,30 @@ class CpuMemoryUsageBenchmark {
             }
         }
 
+        if (PowerMetric.deviceSupportsHighPrecisionTracking()) {
+            metrics.add(PowerMetric(PowerMetric.Type.Energy()))
+        }
+
         benchmarkRule.measureRepeated(
             packageName = "com.android.klaudiak.sttlab",
             metrics = metrics,
             compilationMode = CompilationMode.Partial(),
-            iterations = 4,
+            iterations = 2,
             startupMode = StartupMode.WARM,
             setupBlock = {
                 pressHome()
                 startActivityAndWait()
-                acceptPermission()
+                acceptPermissionInEnglish()
 
             }
         ) {
-            with (device) {
-                wait(Until.hasObject(By.text("Start")), 5000)
-                findObject(By.text("Start")).click()
+            with(device) {
+                wait(Until.hasObject(By.text("Run transcription model")), 5000)
+                findObject(By.text("Run transcription model")).click()
                 wait(Until.hasObject(By.text("Play from Beginning")), 5000)
                 findObject(By.text("Play from Beginning")).click()
 
-                wait(Until.hasObject(By.text("Stop")), 5000)
-                val stopButton = findObject(By.text("Stop"))
-                stopButton.click()
+                wait(Until.hasObject(By.text("All audio files completed!")), 100000)
             }
         }
     }
