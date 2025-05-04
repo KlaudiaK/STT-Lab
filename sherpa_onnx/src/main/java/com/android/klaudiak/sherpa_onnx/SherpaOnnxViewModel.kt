@@ -165,10 +165,6 @@ class SherpaOnnxViewModel @Inject constructor(
 
                 updateText(model.text)
                 logTextIfNotLogged(model.text, updateAudioFileTranslation)
-
-                if (model.isEndpoint()) {
-                    model.reset()
-                }
             }
         }
     }
