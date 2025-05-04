@@ -4,6 +4,8 @@ import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.core.net.toUri
@@ -28,21 +30,39 @@ class AudioPlayerManager @Inject constructor(
     fun createExoPlayer(
         context: Context,
         onFileNameUpdate: (String) -> Unit,
-        onDurationUpdate: (String, Long) -> Unit
+        onDurationUpdate: (String, Long) -> Unit,
+        fileSource: AudioFileType
     ): ExoPlayer = ExoPlayer.Builder(context).build().apply {
-        setupPlayer(context, this, onFileNameUpdate, onDurationUpdate)
+        when (fileSource) {
+            is AudioFileType.Folder -> setupPlayerForFolder(
+                context,
+                fileSource.folderName,
+                this,
+                onFileNameUpdate,
+                onDurationUpdate
+            )
+
+            is AudioFileType.Single -> setupPlayerForSingleFile(
+                context,
+                this,
+                File(fileSource.path, fileSource.fileName),
+                onFileNameUpdate,
+                onDurationUpdate
+            )
+        }
     }
 
     @OptIn(UnstableApi::class)
-    private fun setupPlayer(
+    private fun setupPlayerForFolder(
         context: Context,
+        folder: String,
         exoPlayer: ExoPlayer,
         onFileNameUpdate: (String) -> Unit,
         onDurationUpdate: (String, Long) -> Unit
     ) {
-        val audioFiles = getAudioFiles(context)
+        val audioFiles = getAudioFiles(folder)
         if (audioFiles.isEmpty()) {
-            Log.e(TAG, "No audio files found in folder: ${getFolderPath(context)}")
+            Log.e(TAG, "No audio files found in folder: ${getExternalDownloadFolderPath()}")
             return
         }
 
@@ -52,6 +72,31 @@ class AudioPlayerManager @Inject constructor(
             prepare()
             addPlayerListener(this, onFileNameUpdate)
         }
+    }
+
+    @OptIn(UnstableApi::class)
+    private fun setupPlayerForSingleFile(
+        context: Context,
+        exoPlayer: ExoPlayer,
+        audioFile: File,
+        onFileNameUpdate: (String) -> Unit,
+        onDurationUpdate: (String, Long) -> Unit
+    ) {
+        if (!audioFile.exists()) {
+            Log.e(TAG, "Audio file does not exist: ${audioFile.absolutePath}")
+            return
+        }
+
+        val mediaItem = MediaItem.fromUri(Uri.fromFile(audioFile))
+        val mediaSource = ProgressiveMediaSource.Factory(DefaultDataSource.Factory(context))
+            .createMediaSource(mediaItem)
+
+        exoPlayer.apply {
+            setMediaSource(mediaSource)
+            prepare()
+            addPlayerListener(this, onFileNameUpdate)
+        }
+        onDurationUpdate(audioFile.name, audioFile.length())
     }
 
     private fun getExternalDownloadFolderPath(): String = File(
@@ -67,7 +112,7 @@ class AudioPlayerManager @Inject constructor(
         return folder.path
     }
 
-    private fun getAudioFiles(context: Context): List<File> = File(getFolderPath(context))
+    private fun getAudioFiles(folder: String): List<File> = File(folder)
         .listFiles { file -> file.extension in audioFileExtensions }
         ?.toList()
         ?: emptyList()
@@ -163,6 +208,12 @@ class AudioPlayerManager @Inject constructor(
                 Log.e(TAG, "External folder doesn't exist or is not a directory")
             }
         }
+    }
+
+    fun loadSingleFile(exoPlayer: ExoPlayer, file: File) {
+        val mediaItem = MediaItem.fromUri(Uri.fromFile(file))
+        exoPlayer.setMediaItem(mediaItem)
+        exoPlayer.prepare()
     }
 
     private companion object {

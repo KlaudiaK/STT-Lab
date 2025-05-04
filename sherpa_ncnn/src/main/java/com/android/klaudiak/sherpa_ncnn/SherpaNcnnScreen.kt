@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -40,6 +41,8 @@ fun SherpaNcnnScreen(
     val isRecording by sherpaNcnnViewModel.isRecording.collectAsState()
     val transcriptionText by audioPlayerViewModel.transcriptionText.collectAsState()
 
+    val isPlaybackComplete by audioPlayerViewModel.isPlaybackComplete.collectAsState()
+
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -73,7 +76,8 @@ fun SherpaNcnnScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
-            .padding(24.dp),
+            .padding(dimensionResource(R.dimen.padding_medium)),
+        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         AudioPlayerScreen()
@@ -103,6 +107,8 @@ fun SherpaNcnnScreen(
                 .padding(horizontal = dimensionResource(R.dimen.padding_medium))
         )
 
-        SaveTranscriptionContent()
+        if (isPlaybackComplete) {
+            SaveTranscriptionContent()
+        }
     }
 }
