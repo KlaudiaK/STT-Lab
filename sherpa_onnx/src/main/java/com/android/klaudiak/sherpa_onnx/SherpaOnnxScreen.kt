@@ -29,6 +29,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import com.android.klaudiak.audioplayer.presentation.AudioPlayerScreen
+import com.android.klaudiak.audioplayer.presentation.SaveTranscriptionContent
+import com.android.klaudiak.audioplayer.presentation.SectionDividerWithText
+import com.android.klaudiak.core.presentation.TranscriptionDisplay
 import com.android.klaudiak.sherpa_onnx.Providers.LocalAudioPlayerViewModelProvider
 import com.android.klaudiak.sherpa_onnx.Providers.LocalSherpaOnnxViewModelProvider
 import com.android.klaudiak.sherpa_onnx.SherpaOnnxActivity.Companion.TAG
@@ -43,6 +46,8 @@ fun SherpaOnnxScreen(
 
     val isRecording by sherpaOnnxViewModel.isRecording.collectAsState()
     val transcriptionText by audioPlayerViewModel.transcriptionText.collectAsState()
+
+    val isPlaybackComplete by audioPlayerViewModel.isPlaybackComplete.collectAsState()
 
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -63,9 +68,7 @@ fun SherpaOnnxScreen(
         ) {
             requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
         }
-    }
 
-    LaunchedEffect(Unit) {
         Log.i(TAG, "Initializing model")
         with(sherpaOnnxViewModel) {
             updateModel(initModel())
@@ -82,36 +85,34 @@ fun SherpaOnnxScreen(
     ) {
         AudioPlayerScreen()
 
-        SelectionContainer {
-            Text(
-                text = transcriptionText,
-                modifier = Modifier
-                    .weight(2.5f)
-                    .fillMaxWidth()
-                    .padding(dimensionResource(R.dimen.padding_medium))
-                    .verticalScroll(rememberScrollState())
-            )
-        }
+        SectionDividerWithText(text = stringResource(com.android.klaudiak.audioplayer.R.string.audio_transcription_title))
 
-        Spacer(modifier = Modifier.height(16.dp))
 
-        Button(onClick = {
-            sherpaOnnxViewModel.toggleRecording(
-                updateTranscriptionText = {
-                    audioPlayerViewModel.updateTranscriptionText(it)
-                },
-                updateFileTranscriptionDuration = {
-                    audioPlayerViewModel.updateFileTranscriptionDuration(it)
-                },
-                updateAudioFileTranslation = {
-                    audioPlayerViewModel.updateAudioFileTranslation(it)
+        TranscriptionDisplay(
+            transcriptionText = transcriptionText,
+            isRecording = isRecording,
+            onToggleRecording = {
+                with(audioPlayerViewModel) {
+                    sherpaOnnxViewModel.toggleRecording(
+                        updateTranscriptionText = {
+                            updateTranscriptionText(it)
+                        },
+                        updateFileTranscriptionDuration = {
+                            updateFileTranscriptionDuration(it)
+                        },
+                        updateAudioFileTranslation = {
+                            updateAudioFileTranslation(it)
+                        }
+                    )
                 }
-            )
-        }) {
-            Text(
-                text = if (isRecording) stringResource(R.string.stop)
-                else stringResource(R.string.start)
-            )
+            },
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = dimensionResource(R.dimen.padding_medium))
+        )
+
+        if (isPlaybackComplete) {
+            SaveTranscriptionContent()
         }
     }
 }
