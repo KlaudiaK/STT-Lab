@@ -102,6 +102,12 @@ class AudioPlayerManager @Inject constructor(
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 mediaItem?.mediaId?.let { mediaId ->
                     Log.i(TAG, "Transitioning to: $mediaId, time: ${System.currentTimeMillis()}")
+                    exoPlayer.pause()
+
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        exoPlayer.play()
+                    }, DELAY_BETWEEN_FILES)
+
                     onFileNameUpdate(mediaId)
                 }
             }
@@ -157,5 +163,9 @@ class AudioPlayerManager @Inject constructor(
                 Log.e(TAG, "External folder doesn't exist or is not a directory")
             }
         }
+    }
+
+    private companion object {
+        const val DELAY_BETWEEN_FILES = 3000L
     }
 }
