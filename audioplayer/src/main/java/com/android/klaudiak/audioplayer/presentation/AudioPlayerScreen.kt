@@ -116,8 +116,6 @@ fun AudioPlayerScreen(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(top = dimensionResource(R.dimen.padding_medium))
             )
-
-            SaveTranscriptionContent(viewModel)
         }
     }
 }
@@ -191,7 +189,9 @@ fun SaveTranscriptionContent(
     Column {
         SectionDividerWithText(stringResource(R.string.export_section_title))
         TranscriptionsTextInput(filename = filename) { filename = it }
-        SaveTranscriptionsToFileButton(viewModel, files, filename)
+        SaveTranscriptionsToFileButton(filename.isNotBlank()) {
+            viewModel.exportTranscriptionsToTxt(files, filename)
+        }
     }
 }
 
@@ -224,14 +224,13 @@ private fun TranscriptionsTextInput(filename: String, onFilenameChanged: (String
 
 @Composable
 private fun SaveTranscriptionsToFileButton(
-    viewModel: AudioPlayerViewModel,
-    files: List<AudioFileData>,
-    filename: String
+    isButtonEnabled: Boolean,
+    saveTranscription: () -> Unit,
 ) {
     Button(
-        onClick = { viewModel.exportTranscriptionsToTxt(files, filename) },
+        onClick = { saveTranscription() },
         modifier = Modifier.fillMaxWidth(),
-        enabled = filename.isNotBlank(),
+        enabled = isButtonEnabled,
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimary,
