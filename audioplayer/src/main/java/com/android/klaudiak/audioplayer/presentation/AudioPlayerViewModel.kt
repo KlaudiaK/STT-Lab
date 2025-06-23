@@ -6,7 +6,10 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.exoplayer.ExoPlayer
+import com.android.klaudiak.audioplayer.AccuracyCalculator.calculateWERBasedOnReferenceFile
 import com.android.klaudiak.audioplayer.AudioPlaybackListener
+import com.android.klaudiak.audioplayer.FileUtils
+import com.android.klaudiak.audioplayer.managers.AudioFileType
 import com.android.klaudiak.audioplayer.managers.AudioPlayerManager
 import com.android.klaudiak.audioplayer.model.AudioFileData
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -50,15 +53,25 @@ class AudioPlayerViewModel @Inject constructor(
     private val _isPlaybackComplete = MutableStateFlow(false)
     val isPlaybackComplete = _isPlaybackComplete.asStateFlow()
 
+    private val _filenameWithTranscription = MutableStateFlow<String?>(null)
+    val filenameWithTranscription = _filenameWithTranscription.asStateFlow()
+
+    private var previousTranslation: String = ""
+    private var translation: String = ""
+
     private var exoPlayer: ExoPlayer? = null
 
     fun updateFileName(newFileName: String) {
-        if (newFileName == "PLAYBACK_COMPLETE") {
+        previousTranslation = translation
+        updateTranslation()
+
+        val filenameWithoutExtension = newFileName.substringBeforeLast(".")
+        if (filenameWithoutExtension == "PLAYBACK_COMPLETE") {
             _isPlaybackComplete.value = true
-        } else if (_currentFileName.value != newFileName) {
-            _currentFileName.value = newFileName
+        } else if (_currentFileName.value != filenameWithoutExtension) {
+            _currentFileName.value = filenameWithoutExtension
             _isPlaybackComplete.value = false
-            playbackListener?.onNewAudioFileStarted(newFileName)
+            playbackListener?.onNewAudioFileStarted(filenameWithoutExtension)
         }
     }
 
@@ -91,14 +104,15 @@ class AudioPlayerViewModel @Inject constructor(
         }
     }
 
-    fun updateFileDuration(filename: String, length: Long) {
+    private fun updateFileDuration(filename: String, length: Long) {
+        val filenameWithoutExtension = filename.substringBeforeLast(".")
         _files.update { files ->
             val updatedFiles = files.toMutableList()
-            val index = updatedFiles.indexOfFirst { it.filename == filename }
+            val index = updatedFiles.indexOfFirst { it.filename == filenameWithoutExtension }
             if (index != -1) {
-                updatedFiles[index] = AudioFileData(filename, length, null, null)
+                updatedFiles[index] = AudioFileData(filenameWithoutExtension, length, null, null)
             } else {
-                updatedFiles.add(AudioFileData(filename, length, null, null))
+                updatedFiles.add(AudioFileData(filenameWithoutExtension, length, null, null))
             }
             updatedFiles
         }
@@ -119,11 +133,15 @@ class AudioPlayerViewModel @Inject constructor(
     }
 
     fun updateAudioFileTranslation(translations: String) {
+        translation = translations.substringAfter(previousTranslation)
+    }
+
+    private fun updateTranslation() {
         _files.update { files ->
             val updatedFiles = files.toMutableList()
             val index = updatedFiles.indexOfFirst { it.filename == currentFileName.value }
             if (index != -1) {
-                updatedFiles[index] = updatedFiles[index].copy(transcription = translations)
+                updatedFiles[index] = updatedFiles[index].copy(transcription = translation)
             }
             updatedFiles
         }
@@ -158,7 +176,16 @@ class AudioPlayerViewModel @Inject constructor(
                 },
                 onDurationUpdate = { filename, duration ->
                     updateFileDuration(filename, duration)
-                }
+                },
+                fileSource = AudioFileType.Folder(
+                    folderName = FileUtils.getExternalDownloadFolderPath("stt_audiofiles/resources_usage/short"),
+                )
+                /*fileSource = AudioFileType.Single(
+                    fileName = "2300-131720-0035.flac",
+                    path = FileUtils.getExternalDownloadFolderPath(
+                        "stt_audiofiles/resources_usage/long"
+                    )
+                )*/
             )
         }
     }
@@ -194,14 +221,59 @@ class AudioPlayerViewModel @Inject constructor(
             val path =
                 "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)}/transcriptions"
 
-            File("$path/$outputFilePath.txt").bufferedWriter().use { writer ->
+            val dir = File(path)
+            if (!dir.exists()) {
+                dir.mkdirs()
+            }
+
+            val filename = "$path/$outputFilePath.txt"
+
+            _filenameWithTranscription.update { filename }
+
+            File(filename).bufferedWriter().use { writer ->
                 audioFiles.forEach { file ->
-                    writer.write("${file.filename}|${file.transcription ?: ""}\n")
+                    writer.write("${file.filename} ${file.transcription ?: ""}\n")
                 }
             }
             Log.d(TAG, "Successfully exported transcriptions to $outputFilePath")
+
+            getWERMetric()
         } catch (e: Exception) {
             Log.e(TAG, "Error exporting transcriptions: ${e.message}")
+        }
+    }
+
+    fun getWERMetric() {
+        _filenameWithTranscription.value?.let { filename ->
+            val refFile =
+                File("${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)}/combined_transcriptions.txt")
+            val file = File(filename)
+            if (file.exists()) {
+                Log.d(TAG, "Transcription file exists: $filename")
+                calculateWERBasedOnReferenceFile(
+                    refFile,
+                    file
+                )
+            } else {
+                Log.d(TAG, "Transcription file does not exist: $filename")
+            }
+        }
+
+    }
+
+    fun loadAudioFileFromPath(filePath: String) {
+        val file = File(filePath)
+        if (file.exists()) {
+            viewModelScope.launch {
+                exoPlayer?.let {
+                    it.stop()
+                    it.clearMediaItems()
+                    audioPlayerManager.loadSingleFile(it, file)
+                }
+            }
+            updateFileName(file.name)
+        } else {
+            Log.e(TAG, "File at $filePath does not exist.")
         }
     }
 
