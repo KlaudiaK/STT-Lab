@@ -47,11 +47,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.android.klaudiak.audioplayer.R
@@ -130,6 +133,7 @@ private fun Header() {
     )
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun PlayAudioButton(isPlaying: Boolean, onClick: () -> Unit) {
     val buttonSize = 72.dp
@@ -163,14 +167,25 @@ private fun PlayAudioButton(isPlaying: Boolean, onClick: () -> Unit) {
                     Icon(
                         imageVector = Icons.Default.Pause,
                         contentDescription = "Pause",
-                        modifier = Modifier.size(iconSize),
+                        modifier = Modifier
+                            .size(iconSize)
+                            .testTag("recordingButton")
+                            .semantics {
+                                testTagsAsResourceId = true
+                            },
+
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
                         contentDescription = "Play",
-                        modifier = Modifier.size(iconSize),
+                        modifier = Modifier
+                            .size(iconSize)
+                            .testTag("recordingButton")
+                            .semantics {
+                                testTagsAsResourceId = true
+                            },
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }
@@ -186,7 +201,7 @@ fun SaveTranscriptionContent(
     var filename by remember { mutableStateOf("") }
     val files by viewModel.files.collectAsState()
 
-    Column {
+    Column(Modifier.wrapContentHeight()) {
         SectionDividerWithText(stringResource(R.string.export_section_title))
         TranscriptionsTextInput(filename = filename) { filename = it }
         SaveTranscriptionsToFileButton(filename.isNotBlank()) {

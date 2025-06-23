@@ -1,6 +1,8 @@
 package com.android.klaudiak.core.presentation
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -40,7 +43,10 @@ fun TranscriptionDisplay(
     onToggleRecording: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier) {
+
+    val scrollState = rememberScrollState()
+
+    Column(modifier = modifier.scrollable(scrollState, Orientation.Vertical)) {
         TranscriptionCard(transcriptionText = transcriptionText)
         Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_medium)))
         RecordingButton(isRecording = isRecording, onToggleRecording = onToggleRecording)
@@ -49,7 +55,11 @@ fun TranscriptionDisplay(
 
 @Composable
 fun TranscriptionCard(transcriptionText: String, modifier: Modifier = Modifier) {
-    SelectionContainer(modifier = modifier.fillMaxWidth()) {
+    SelectionContainer(
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(max = 150.dp)
+    ) {
         Card(
             modifier = Modifier
                 .padding(vertical = dimensionResource(R.dimen.padding_small)),
@@ -83,7 +93,6 @@ fun RecordingButton(
         modifier = modifier
             .fillMaxWidth()
             .padding(
-                horizontal = dimensionResource(R.dimen.padding_big),
                 vertical = dimensionResource(R.dimen.padding_medium)
             ),
         contentAlignment = Alignment.Center
@@ -116,12 +125,12 @@ fun RecordingButton(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Icon(
-                    imageVector = if (isRecording) Icons.Default.Stop
-                    else Icons.Default.Mic,
+                    imageVector = if (isRecording) Icons.Default.Stop else Icons.Default.Mic,
                     contentDescription = if (isRecording) stringResource(R.string.stop) else stringResource(
                         R.string.start
                     ),
-                    modifier = Modifier.size(dimensionResource(R.dimen.icon_medium_size))
+                    modifier = Modifier
+                        .size(dimensionResource(R.dimen.icon_medium_size)),
                 )
                 Spacer(modifier = Modifier.width(dimensionResource(R.dimen.padding_small)))
                 Text(
