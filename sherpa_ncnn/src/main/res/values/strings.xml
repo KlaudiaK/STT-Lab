@@ -12,4 +12,5 @@
     <string name="start">Run transcription model</string>
     <string name="stop">Stop transcription model</string>
     <string name="audio_transcription_title">Audio transcription</string>
+    <string name="sherpa_ncnn_stt_title">Sherpa ncnn</string>
 </resources>

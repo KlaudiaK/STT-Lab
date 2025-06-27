@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -83,6 +84,14 @@ fun SherpaOnnxScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
+        Text(
+            text = stringResource(R.string.sherpa_onnx_stt_title),
+            style = MaterialTheme.typography.headlineLarge,
+            fontWeight = MaterialTheme.typography.headlineLarge.fontWeight,
+            modifier = Modifier.padding(bottom = dimensionResource(R.dimen.padding_medium))
+        )
+
         AudioPlayerScreen()
 
         SectionDividerWithText(text = stringResource(com.android.klaudiak.audioplayer.R.string.audio_transcription_title))

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -88,6 +89,14 @@ fun SherpaNcnnScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
+        Text(
+            text = stringResource(R.string.sherpa_ncnn_stt_title),
+            style = MaterialTheme.typography.headlineLarge,
+            fontWeight = MaterialTheme.typography.headlineLarge.fontWeight,
+            modifier = Modifier.padding(bottom = dimensionResource(R.dimen.padding_medium))
+        )
+
         AudioPlayerScreen()
 
         SectionDividerWithText(text = stringResource(R.string.audio_transcription_title))

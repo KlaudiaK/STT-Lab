@@ -8,4 +8,5 @@
     </string>
     <string name="start">Run transcription model</string>
     <string name="stop">Stop transcription model</string>
+    <string name="sherpa_onnx_stt_title">Sherpa onnx</string>
 </resources>
