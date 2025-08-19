@@ -29,6 +29,9 @@ class SherpaNcnnViewModel @Inject constructor(
     private var audioRecord: AudioRecord? = null
     private var recordingThread: Thread? = null
 
+    @Volatile
+    private var isProcessing = false
+
     private val _isRecording = MutableStateFlow(false)
     val isRecording = _isRecording.asStateFlow()
 
@@ -83,6 +86,7 @@ class SherpaNcnnViewModel @Inject constructor(
             return
         }
 
+        isProcessing = true
         try {
             audioRecord?.startRecording()
             _isRecording.value = true
@@ -104,12 +108,14 @@ class SherpaNcnnViewModel @Inject constructor(
     private fun stopRecording() {
         try {
             _isRecording.value = false
+            isProcessing = false
             audioRecord?.apply {
                 stop()
                 release()
             }
             audioRecord = null
             recordingThread?.interrupt()
+            recordingThread = null
             Log.i(TAG, "Recording stopped")
         } catch (e: Exception) {
             Log.e(TAG, "Error stopping recording: ${e.localizedMessage}")
@@ -136,7 +142,7 @@ class SherpaNcnnViewModel @Inject constructor(
         val sampleRate = 16000.0
         val chunkDurationSec = bufferSize / sampleRate
 
-        while (true) {
+        while (isProcessing) {
             val ret = audioRecord?.read(buffer, 0, buffer.size) ?: 0
             if (ret > 0) {
                 val samples = FloatArray(ret) { buffer[it] / 32768.0f }

@@ -13,6 +13,7 @@ import com.android.klaudiak.audioplayer.managers.AudioFileType
 import com.android.klaudiak.audioplayer.managers.AudioPlayerManager
 import com.android.klaudiak.audioplayer.model.AudioFileData
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -32,6 +33,9 @@ class AudioPlayerViewModel @Inject constructor(
 
     private val _currentFileName = MutableStateFlow<String?>(null)
     val currentFileName = _currentFileName.asStateFlow()
+
+    private val _previousFilename = MutableStateFlow<String?>(null)
+    val previousFilename = _previousFilename.asStateFlow()
 
     private val _isRecording = MutableStateFlow(false)
     val isRecording = _isRecording.asStateFlow()
@@ -61,17 +65,24 @@ class AudioPlayerViewModel @Inject constructor(
 
     private var exoPlayer: ExoPlayer? = null
 
-    fun updateFileName(newFileName: String) {
-        previousTranslation = translation
-        updateTranslation()
+    fun updateFileName(newFileName: String, resetModel: () -> Unit = {}) {
+        viewModelScope.launch {
+            delay(2000)
+            updateTranslation()
+            previousTranslation = translation
+            resetModel()
+        }
 
-        val filenameWithoutExtension = newFileName.substringBeforeLast(".")
-        if (filenameWithoutExtension == "PLAYBACK_COMPLETE") {
-            _isPlaybackComplete.value = true
-        } else if (_currentFileName.value != filenameWithoutExtension) {
-            _currentFileName.value = filenameWithoutExtension
-            _isPlaybackComplete.value = false
-            playbackListener?.onNewAudioFileStarted(filenameWithoutExtension)
+        viewModelScope.launch {
+            delay(3000)
+            val filenameWithoutExtension = newFileName.substringBeforeLast(".")
+            if (filenameWithoutExtension == "PLAYBACK_COMPLETE") {
+                _isPlaybackComplete.value = true
+            } else if (_currentFileName.value != filenameWithoutExtension) {
+                _currentFileName.value = filenameWithoutExtension
+                _isPlaybackComplete.value = false
+                playbackListener?.onNewAudioFileStarted(filenameWithoutExtension)
+            }
         }
     }
 
@@ -120,6 +131,7 @@ class AudioPlayerViewModel @Inject constructor(
 
     fun updateFileTranscriptionDuration(transcriptionLength: Long) {
         _files.update { files ->
+
             val updatedFiles = files.toMutableList()
             val index = updatedFiles.indexOfFirst { it.filename == currentFileName.value }
             if (index != -1) {
@@ -138,6 +150,7 @@ class AudioPlayerViewModel @Inject constructor(
 
     private fun updateTranslation() {
         _files.update { files ->
+            Log.d("AudioPlayerViewModel", "Current filename : ${currentFileName.value}")
             val updatedFiles = files.toMutableList()
             val index = updatedFiles.indexOfFirst { it.filename == currentFileName.value }
             if (index != -1) {
@@ -147,6 +160,8 @@ class AudioPlayerViewModel @Inject constructor(
         }
 
         Log.i("AudioFileData", _files.value.joinToString { it.toString() })
+        // TODO uncomment for saving transcription - WER calculation
+        //  exportTranscriptionsToTxt(_files.value, "transcriptions_s23-commonvoice_sherpa_ncnn_phone")
     }
 
     fun saveTranscriptionToFile(audioFileName: String, transcription: String) {
@@ -178,7 +193,7 @@ class AudioPlayerViewModel @Inject constructor(
                     updateFileDuration(filename, duration)
                 },
                 fileSource = AudioFileType.Folder(
-                    folderName = FileUtils.getExternalDownloadFolderPath("stt_audiofiles/resources_usage/short"),
+                    folderName = FileUtils.getExternalDownloadFolderPath("stt_audiofiles/resources_usage/long"),
                 )
                 /*fileSource = AudioFileType.Single(
                     fileName = "2300-131720-0035.flac",

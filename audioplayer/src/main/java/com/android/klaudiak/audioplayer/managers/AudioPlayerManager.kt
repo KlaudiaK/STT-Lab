@@ -167,8 +167,8 @@ class AudioPlayerManager @Inject constructor(
                     Log.i(TAG, "Playback ended")
                     if (exoPlayer.currentMediaItemIndex == exoPlayer.mediaItemCount - 1) {
                         Log.i(TAG, "Last file finished playing")
-                        onFileNameUpdate("PLAYBACK_COMPLETE")
                     }
+                    onFileNameUpdate("PLAYBACK_COMPLETE")
                 }
             }
         })
@@ -217,6 +217,6 @@ class AudioPlayerManager @Inject constructor(
     }
 
     private companion object {
-        const val DELAY_BETWEEN_FILES = 3000L
+        const val DELAY_BETWEEN_FILES = 5000L
     }
 }

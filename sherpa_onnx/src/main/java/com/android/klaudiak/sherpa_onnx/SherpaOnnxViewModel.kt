@@ -33,6 +33,9 @@ class SherpaOnnxViewModel @Inject constructor(
     private var audioRecord: AudioRecord? = null
     private var recordingThread: Thread? = null
 
+    @Volatile
+    private var isProcessing = false
+
     private val _isRecording = MutableStateFlow(false)
     val isRecording = _isRecording.asStateFlow()
 
@@ -82,6 +85,7 @@ class SherpaOnnxViewModel @Inject constructor(
             return
         }
 
+        isProcessing = true
         try {
             audioRecord?.startRecording()
             _isRecording.value = true
@@ -103,6 +107,7 @@ class SherpaOnnxViewModel @Inject constructor(
     private fun stopRecording() {
         try {
             _isRecording.value = false
+            isProcessing = false
             audioRecord?.apply {
                 stop()
                 release()
@@ -135,7 +140,7 @@ class SherpaOnnxViewModel @Inject constructor(
         var totalAudioDurationSec: Double = 0.0
         val chunkDurationSec = bufferSize / sampleRateInHz.toDouble()
 
-        while (true) {
+        while (isProcessing) {
             val ret = audioRecord?.read(buffer, 0, buffer.size) ?: 0
             if (ret > 0) {
                 val samples = FloatArray(ret) { buffer[it] / 32768.0f }
@@ -146,6 +151,7 @@ class SherpaOnnxViewModel @Inject constructor(
                 synchronized(model) {
                     while (model.isReady()) {
                         model.decode()
+
                         if (model.text.isNotBlank()) {
                             val startTime = System.currentTimeMillis()
                             model.text.split(" ").filter { it.isNotBlank() }
@@ -164,6 +170,7 @@ class SherpaOnnxViewModel @Inject constructor(
                 val rtf = (totalProcessingTimeNs / 1e9) / totalAudioDurationSec
 
                 updateText(model.text)
+
                 logTextIfNotLogged(model.text, updateAudioFileTranslation)
             }
         }
@@ -198,4 +205,6 @@ class SherpaOnnxViewModel @Inject constructor(
     }
 
     private fun checkAudioPermission() = permissionRepository.hasRecordAudioPermission()
+
+    fun resetModel() = model.reset()
 }
