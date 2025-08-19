@@ -26,12 +26,12 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class CpuMemoryUsageBenchmark {
 
-    @get:Rule
-    val grantPermissionRule: GrantPermissionRule =
-        GrantPermissionRule.grant(
-            Manifest.permission.RECORD_AUDIO,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        )
+//    @get:Rule
+//    val grantPermissionRule: GrantPermissionRule =
+//        GrantPermissionRule.grant(
+//            Manifest.permission.RECORD_AUDIO,
+//            Manifest.permission.WRITE_EXTERNAL_STORAGE
+//        )
 
     @get:Rule
     val benchmarkRule = MacrobenchmarkRule()
@@ -59,9 +59,9 @@ class CpuMemoryUsageBenchmark {
                 MemoryUsageMetric.Mode.Max,
                 listOf(
                     MemoryUsageMetric.SubMetric.Gpu,
-                    MemoryUsageMetric.SubMetric.HeapSize,  // Java/Kotlin heap
-                    MemoryUsageMetric.SubMetric.RssAnon,   // RAM used by process
-                    MemoryUsageMetric.SubMetric.RssFile,   // Mapped files
+                    MemoryUsageMetric.SubMetric.HeapSize,
+                    MemoryUsageMetric.SubMetric.RssAnon,
+                    MemoryUsageMetric.SubMetric.RssFile,
                 )
             ),
         )
@@ -81,8 +81,8 @@ class CpuMemoryUsageBenchmark {
         benchmarkRule.measureRepeated(
             packageName = "com.android.klaudiak.sttlab",
             metrics = metrics,
-            compilationMode = CompilationMode.Partial(),
-            iterations = 2,
+            compilationMode = CompilationMode.Full(),
+            iterations = 5,
             startupMode = StartupMode.WARM,
             setupBlock = {
                 pressHome()
