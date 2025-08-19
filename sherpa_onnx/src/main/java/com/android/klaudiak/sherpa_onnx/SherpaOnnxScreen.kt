@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -75,53 +76,57 @@ fun SherpaOnnxScreen(
         Log.i(TAG, "Model initialized")
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface)
-            .scrollable(scrollState, Orientation.Vertical)
-            .padding(dimensionResource(R.dimen.padding_medium)),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        Text(
-            text = stringResource(R.string.sherpa_onnx_stt_title),
-            style = MaterialTheme.typography.headlineLarge,
-            fontWeight = MaterialTheme.typography.headlineLarge.fontWeight,
-            modifier = Modifier.padding(bottom = dimensionResource(R.dimen.padding_medium))
-        )
-
-        AudioPlayerScreen()
-
-        SectionDividerWithText(text = stringResource(com.android.klaudiak.audioplayer.R.string.audio_transcription_title))
-
-
-        TranscriptionDisplay(
-            transcriptionText = transcriptionText,
-            isRecording = isRecording,
-            onToggleRecording = {
-                with(audioPlayerViewModel) {
-                    sherpaOnnxViewModel.toggleRecording(
-                        updateTranscriptionText = {
-                            updateTranscriptionText(it)
-                        },
-                        updateFileTranscriptionDuration = {
-                            updateFileTranscriptionDuration(it)
-                        },
-                        updateAudioFileTranslation = {
-                            updateAudioFileTranslation(it)
-                        }
-                    )
-                }
-            },
+    Scaffold { paddingValues ->
+        Column(
             modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = dimensionResource(R.dimen.padding_medium))
-        )
+                .padding(paddingValues)
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface)
+                .scrollable(scrollState, Orientation.Vertical)
+                .padding(dimensionResource(R.dimen.padding_medium)),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
 
-        if (isPlaybackComplete) {
-            SaveTranscriptionContent()
+            Text(
+                text = stringResource(R.string.sherpa_onnx_stt_title),
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = MaterialTheme.typography.headlineLarge.fontWeight,
+                modifier = Modifier.padding(bottom = dimensionResource(R.dimen.padding_medium))
+            )
+
+            SectionDividerWithText(text = stringResource(com.android.klaudiak.audioplayer.R.string.audio_player_title))
+
+            AudioPlayerScreen()
+
+            SectionDividerWithText(text = stringResource(com.android.klaudiak.audioplayer.R.string.audio_transcription_title))
+
+            TranscriptionDisplay(
+                transcriptionText = transcriptionText,
+                isRecording = isRecording,
+                onToggleRecording = {
+                    with(audioPlayerViewModel) {
+                        sherpaOnnxViewModel.toggleRecording(
+                            updateTranscriptionText = {
+                                updateTranscriptionText(it)
+                            },
+                            updateFileTranscriptionDuration = {
+                                updateFileTranscriptionDuration(it)
+                            },
+                            updateAudioFileTranslation = {
+                                updateAudioFileTranslation(it)
+                            }
+                        )
+                    }
+                },
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = dimensionResource(R.dimen.padding_medium))
+            )
+
+           /* if (isPlaybackComplete) {
+                SaveTranscriptionContent()
+            }*/
         }
     }
 }

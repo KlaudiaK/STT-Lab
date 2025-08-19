@@ -6,4 +6,5 @@
     <string name="play_from_beginning">Play from Beginning</string>
     <string name="all_audio_files_completed">All audio files completed!</string>
     <string name="audio_transcription_title">Audio transcription</string>
+    <string name="audio_player_title">Audio player</string>
 </resources>
