@@ -100,8 +100,9 @@
             <AndroidTestResultsTableState>
               <option name="preferredColumnWidths">
                 <map>
-                  <entry key="Duration" value="90" />
-                  <entry key="Tests" value="360" />
+                  <entry key="Duration" value="184" />
+                  <entry key="Tests" value="454" />
+                  <entry key="Xiaomi M2103K19G" value="214" />
                   <entry key="samsung SM-N960F" value="120" />
                   <entry key="samsung SM-S911B" value="120" />
                 </map>

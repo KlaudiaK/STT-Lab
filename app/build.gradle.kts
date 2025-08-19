@@ -26,6 +26,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
         create("benchmark") {
             initWith(buildTypes.getByName("release"))
@@ -60,7 +61,7 @@ android {
 
 dependencies {
     implementation(project(":sherpa_ncnn"))
-    // implementation(project(":sherpa-onnx"))
+ //   implementation(project(":sherpa_onnx"))
     implementation(project(":core"))
     implementation(project(":audioplayer"))
     implementation(project(":vosk-stt"))
