@@ -1,4 +1,4 @@
-package com.android.klaudiak.sherpa_ncnn
+package com.android.klaudiak.vosk_stt
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -6,8 +6,6 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,29 +25,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import com.android.klaudiak.audioplayer.presentation.AudioPlayerScreen
 import com.android.klaudiak.audioplayer.presentation.SaveTranscriptionContent
 import com.android.klaudiak.audioplayer.presentation.SectionDividerWithText
 import com.android.klaudiak.core.presentation.TranscriptionDisplay
-import com.android.klaudiak.sherpa_ncnn.Providers.LocalAudioPlayerViewModelProvider
-import com.android.klaudiak.sherpa_ncnn.Providers.LocalSherpaNcnnViewModelProvider
-import com.android.klaudiak.sherpa_ncnn.SherpaNcnnActivity.Companion.TAG
+import com.android.klaudiak.vosk_stt.Providers.LocalAudioPlayerViewModelProvider
+import com.android.klaudiak.vosk_stt.Providers.LocalVoskViewModelProvider
+import com.android.klaudiak.vosk_stt.VoskActivity.Companion.TAG
 
 @Composable
-fun SherpaNcnnScreen(
+fun VoskScreen(
     finish: () -> Unit
 ) {
     val context = LocalContext.current
     val audioPlayerViewModel = LocalAudioPlayerViewModelProvider.current
-    val sherpaNcnnViewModel = LocalSherpaNcnnViewModelProvider.current
-
-    val isRecording by sherpaNcnnViewModel.isRecording.collectAsState()
-    val transcriptionText by audioPlayerViewModel.transcriptionText.collectAsState()
-
+    val voskViewModel = LocalVoskViewModelProvider.current
+    val isRecording by voskViewModel.isRecording.collectAsState()
+    val transcriptionText by voskViewModel.resultText.collectAsState()
     val isPlaybackComplete by audioPlayerViewModel.isPlaybackComplete.collectAsState()
-
     val scrollState = rememberScrollState()
 
     val requestPermissionLauncher = rememberLauncherForActivityResult(
@@ -73,14 +67,6 @@ fun SherpaNcnnScreen(
         }
     }
 
-    LaunchedEffect(Unit) {
-        Log.i(TAG, "Initializing model")
-        with(sherpaNcnnViewModel) {
-            updateModel(initModel())
-        }
-        Log.i(TAG, "Model initialized")
-    }
-
     Scaffold { paddingValues ->
         Column(
             modifier = Modifier
@@ -92,17 +78,14 @@ fun SherpaNcnnScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             Text(
-                text = stringResource(R.string.sherpa_ncnn_stt_title),
+                text = stringResource(R.string.vosk_stt_title),
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = MaterialTheme.typography.headlineLarge.fontWeight,
-                modifier = Modifier.padding(bottom = 32.dp)
+                modifier = Modifier.padding(bottom = dimensionResource(R.dimen.padding_medium))
             )
 
-            SectionDividerWithText(text = stringResource(com.android.klaudiak.audioplayer.R.string.audio_player_title))
-
-            AudioPlayerScreen()
+            AudioPlayerScreen(audioPlayerViewModel)
 
             SectionDividerWithText(text = stringResource(R.string.audio_transcription_title))
 
@@ -111,17 +94,9 @@ fun SherpaNcnnScreen(
                 isRecording = isRecording,
                 onToggleRecording = {
                     with(audioPlayerViewModel) {
-                        sherpaNcnnViewModel.toggleRecording(
-                            updateTranscriptionText = {
-                                updateTranscriptionText(it)
-                            },
-                            updateFileTranscriptionDuration = {
-                                updateFileTranscriptionDuration(it)
-                            },
-                            updateAudioFileTranslation = {
-                                updateAudioFileTranslation(it)
-                            }
-                        )
+                        voskViewModel.toggleMicrophone {
+                            updateAudioFileTranslation(it)
+                        }
                     }
                 },
                 modifier = Modifier
@@ -129,7 +104,7 @@ fun SherpaNcnnScreen(
                     .padding(horizontal = dimensionResource(R.dimen.padding_medium))
             )
 
-          /*  if (isPlaybackComplete) {
+         /*   if (isPlaybackComplete) {
                 SaveTranscriptionContent()
             }*/
         }

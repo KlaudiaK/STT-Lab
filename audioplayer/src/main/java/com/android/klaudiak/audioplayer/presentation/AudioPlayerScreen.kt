@@ -96,7 +96,6 @@ fun AudioPlayerScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        Header()
 
         PlayAudioButton(isPlaying) {
             isPlaying = !isPlaying
@@ -127,7 +126,7 @@ fun AudioPlayerScreen(
 private fun Header() {
     Text(
         text = stringResource(R.string.audio_player_header),
-        style = MaterialTheme.typography.headlineMedium,
+        style = MaterialTheme.typography.headlineSmall,
         color = MaterialTheme.colorScheme.onSurface,
         modifier = Modifier.padding(bottom = dimensionResource(R.dimen.padding_small))
     )

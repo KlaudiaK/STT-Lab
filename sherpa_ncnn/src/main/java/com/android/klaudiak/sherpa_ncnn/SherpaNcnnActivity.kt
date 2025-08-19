@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.runtime.CompositionLocalProvider
 import com.android.klaudiak.audioplayer.AudioPlaybackListener
@@ -21,6 +22,8 @@ class SherpaNcnnActivity : ComponentActivity(), AudioPlaybackListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            enableEdgeToEdge()
+
             CompositionLocalProvider(
                 LocalSherpaNcnnViewModelProvider provides sherpaNcnnViewModel,
                 LocalAudioPlayerViewModelProvider provides audioPlayerViewModel

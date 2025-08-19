@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.core.content.ContextCompat
@@ -29,6 +30,8 @@ class VoskActivity : ComponentActivity(), AudioPlaybackListener {
         LibVosk.setLogLevel(LogLevel.INFO)
 
         setContent {
+            enableEdgeToEdge()
+
             CompositionLocalProvider(
                 LocalVoskViewModelProvider provides voskViewModel,
                 LocalAudioPlayerViewModelProvider provides audioPlayerViewModel

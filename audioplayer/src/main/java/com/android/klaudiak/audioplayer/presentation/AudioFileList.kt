@@ -94,7 +94,7 @@ fun AnimatedAudioFileStrip(
                     .padding(vertical = dimensionResource(R.dimen.padding_tiny))
                     .scale(scale)
                     .alpha(alpha),
-                fontSize = if (isCurrent) 22.sp else 16.sp,
+                fontSize = if (isCurrent) 20.sp else 16.sp,
                 fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal,
                 color = MaterialTheme.colorScheme.onSurface
             )
